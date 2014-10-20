@@ -17,6 +17,7 @@ import java.util.Set;
 public class ShogiBoardComponent extends JComponent{
     private static final int BLACK = 0;
     private static final int WHITE = 1;
+    private static final String asset_img_path = "resources/img";
 
     private static final Point OFFSET = new Point(151 + 26, 0 + 26);
     private static final int GRID = 50;
@@ -256,15 +257,15 @@ public class ShogiBoardComponent extends JComponent{
             }
         }
         try {
-            ShogiBoard_Img = ImageIO.read(new File("./img/ShogiBoard.png"));
+            ShogiBoard_Img = ImageIO.read(new File(asset_img_path + "/ShogiBoard.png"));
             for(int i = 0; i < 14; i++) {
                 String filename_of[] = new String[2];
                 if(i < 10) {
-                    filename_of[BLACK] = new String().format("./img/pieces/B%s.png", pad(i+1) );
-                    filename_of[WHITE] = new String().format("./img/pieces/W%s.png", pad(i+1) );
+                    filename_of[BLACK] = new String().format(asset_img_path + "/pieces/B%s.png", pad(i+1) );
+                    filename_of[WHITE] = new String().format(asset_img_path + "/pieces/W%s.png", pad(i+1) );
                 } else {
-                    filename_of[BLACK] = new String().format("./img/pieces/B11_%s.png", pad(i-10+1));
-                    filename_of[WHITE] = new String().format("./img/pieces/W11_%s.png", pad(i-10+1));
+                    filename_of[BLACK] = new String().format(asset_img_path + "/img/pieces/B11_%s.png", pad(i-10+1));
+                    filename_of[WHITE] = new String().format(asset_img_path + "/pieces/W11_%s.png", pad(i-10+1));
                 }
                 //TODO: delete print 4 debug
                 System.out.println(filename_of[WHITE] + " " + filename_of[BLACK]);
