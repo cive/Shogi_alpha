@@ -9,6 +9,16 @@ Shogi_alpha
 
 とりあえず，将棋盤のコマを移動させるだけのプログラムは書きましたので，それだけで遊べるという方は，ぜひどうぞ(ぇ
 
+
+ - mkdir out
+ - cd src
+ - javac -d ../out cive/shogi/Main.java
+ - cd ../
+ - mkdir out/resources
+ - cp -r src/resources out/resources
+ - cd out
+ - java cive.shogi.Main
+
 ###とりあえずテスト書けよといわれた気がする...###
 
 ###お借りした素材を置いている方のリンク###
