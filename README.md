@@ -18,6 +18,7 @@ Shogi_alpha
  - cp -r src/resources out/resources
  - cd out
  - java cive.shogi.Main
+ - バッチファイル書いてない()
 
 ###とりあえずテスト書けよといわれた気がする...###
 
