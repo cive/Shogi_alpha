@@ -264,7 +264,7 @@ public class ShogiBoardComponent extends JComponent{
                     filename_of[BLACK] = new String().format(asset_img_path + "/pieces/B%s.png", pad(i+1) );
                     filename_of[WHITE] = new String().format(asset_img_path + "/pieces/W%s.png", pad(i+1) );
                 } else {
-                    filename_of[BLACK] = new String().format(asset_img_path + "/img/pieces/B11_%s.png", pad(i-10+1));
+                    filename_of[BLACK] = new String().format(asset_img_path + "/pieces/B11_%s.png", pad(i-10+1));
                     filename_of[WHITE] = new String().format(asset_img_path + "/pieces/W11_%s.png", pad(i-10+1));
                 }
                 //TODO: delete print 4 debug
