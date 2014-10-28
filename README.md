@@ -20,6 +20,13 @@ Shogi_alpha
  - java cive.shogi.Main
  - バッチファイル書いてない()
 
+### Mavenで管理するようにしました
+ - Maven version 3.2.1
+ - mvn install
+ - mvn compile
+ - java -cp target/classes cive.shogi.Main
+ - 楽ちん。
+
 ###とりあえずテスト書けよといわれた気がする...###
 
 ###お借りした素材を置いている方のリンク###
