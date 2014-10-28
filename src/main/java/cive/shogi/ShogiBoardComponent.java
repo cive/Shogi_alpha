@@ -17,7 +17,7 @@ import java.util.Set;
 public class ShogiBoardComponent extends JComponent{
     private static final int BLACK = 0;
     private static final int WHITE = 1;
-    private static final String asset_img_path = "resources/img";
+    private static final String ASSET_IMG_PATH = "img";
 
     private static final Point OFFSET = new Point(151 + 26, 0 + 26);
     private static final int GRID = 50;
@@ -257,15 +257,20 @@ public class ShogiBoardComponent extends JComponent{
             }
         }
         try {
-            ShogiBoard_Img = ImageIO.read(new File(asset_img_path + "/ShogiBoard.png"));
+	    String img_path = System.getProperty("java.class.path") + "/" + ASSET_IMG_PATH;
+	    File shogi_board_imgFile = new File(img_path + "/ShogiBoard.png");
+	    // TODO: delete 4 debug
+	    System.out.println(shogi_board_imgFile.getCanonicalPath());
+	    System.out.println(System.getProperty("java.class.path"));
+            ShogiBoard_Img = ImageIO.read(shogi_board_imgFile);
             for(int i = 0; i < 14; i++) {
                 String filename_of[] = new String[2];
                 if(i < 10) {
-                    filename_of[BLACK] = new String().format(asset_img_path + "/pieces/B%s.png", pad(i+1) );
-                    filename_of[WHITE] = new String().format(asset_img_path + "/pieces/W%s.png", pad(i+1) );
+                    filename_of[BLACK] = new String().format("%s/pieces/B%s.png",img_path , pad(i+1) );
+                    filename_of[WHITE] = new String().format("%s/pieces/W%s.png",img_path , pad(i+1) );
                 } else {
-                    filename_of[BLACK] = new String().format(asset_img_path + "/pieces/B11_%s.png", pad(i-10+1));
-                    filename_of[WHITE] = new String().format(asset_img_path + "/pieces/W11_%s.png", pad(i-10+1));
+                    filename_of[BLACK] = new String().format("%s/pieces/B11_%s.png",img_path , pad(i-10+1));
+                    filename_of[WHITE] = new String().format("%s/pieces/W11_%s.png",img_path,  pad(i-10+1));
                 }
                 //TODO: delete print 4 debug
                 System.out.println(filename_of[WHITE] + " " + filename_of[BLACK]);
