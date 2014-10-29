@@ -11,8 +11,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
 
 public class ShogiBoardComponent extends JComponent{
     private static final int BLACK = 0;
@@ -49,12 +49,12 @@ public class ShogiBoardComponent extends JComponent{
         for(int i = 2; i < 8; i+=2) {
             judgements[i-1] = p.x >= offset.x    && p.x <= (offset.x+75) &&
                     p.y >= offset.y+i*25 && p.y <= (offset.y+50+i*25);
-            judgements[i]=p.x >= offset.x    && p.x <= (offset.x+150) &&
-                    p.y >= offset.y+100+i*25 && p.y <= (offset.y+100+i*25);
+            judgements[i]=p.x >= (offset.x+75)    && p.x <= (offset.x+150) &&
+                    p.y >= offset.y+i*25 && p.y <= (offset.y+50+i*25);
         }
         return judgements;
     }
-    private void logicOfMovingPieceOnBoard(Point selecting, Point clicked) {
+    private void logicOfMovingPieceOnBoard(Point clicked) {
         if (getSelected_point().x != -1) {
             Piece that = gameBoard.getPieceOf(getSelected_point().x, getSelected_point().y);
             // クリックした駒が，ちゃんと手番に合っているかどうか．
@@ -85,7 +85,7 @@ public class ShogiBoardComponent extends JComponent{
         boolean onBoard = selecting.x >= OFFSET.x && selecting.x <= (OFFSET.x+50*9) && selecting.y >= OFFSET.y && selecting.y <= (OFFSET.y+50*9);
         if(onBoard) {
             Point clicked_point = new Point((int) ((selecting.x - OFFSET.x) / 50), (int) ((selecting.y - OFFSET.y) / 50));
-            logicOfMovingPieceOnBoard(selecting, clicked_point);
+            logicOfMovingPieceOnBoard(clicked_point);
         }  else if (!onBoard) {
             // 持ち駒の処理．
             // TODO: メソッド分割．
@@ -93,20 +93,19 @@ public class ShogiBoardComponent extends JComponent{
             onWhiteBoard_of = getJudgementsOfPieceInHand(selecting, WHITES_OFFSET);
             boolean onBlackBoard_of[];
             onBlackBoard_of = getJudgementsOfPieceInHand(selecting, BLACKS_OFFSET);
-            Set<Piece> whites_set = gameBoard.getPieces_inHand_of_white();
-            Set<Piece> blacks_set = gameBoard.getPieces_inHand_of_black();
-            boolean couldSelected = false;
+            ArrayList<Piece> whites_list = gameBoard.getPieces_inHand_of_white();
+            ArrayList<Piece> blacks_list = gameBoard.getPieces_inHand_of_black();
+            boolean couldSelect = false;
             for(int type = 1; type < 8; type++) {
                 if (onWhiteBoard_of[type-1]) {
-                    couldSelected = setSelected_pieces_inHand(whites_set, type);
-                    if(couldSelected)break;
-                    System.out.println(selected_pieces_inHand);
+                    couldSelect = setSelected_pieces_inHand(whites_list, type);
                 }
                 if (onBlackBoard_of[type-1]) {
-                    couldSelected = setSelected_pieces_inHand(blacks_set, type);
-                    if(couldSelected)break;
+                    couldSelect = setSelected_pieces_inHand(blacks_list, type);
                 }
-                if (!couldSelected) {
+                if (couldSelect) {
+                    break;
+                } else {
                     selected_pieces_inHand = new EmptyPiece();
                 }
             }
@@ -117,11 +116,10 @@ public class ShogiBoardComponent extends JComponent{
         repaint();
     }
     // もし，セレクトできれば，trueを返す．
-    public boolean setSelected_pieces_inHand(Set<Piece> set, final int TYPE) {
+    public boolean setSelected_pieces_inHand(ArrayList<Piece> list, final int TYPE) {
         boolean couldSelected = false;
-        for(Iterator i = set.iterator(); i.hasNext();) {
-            Piece piece = (Piece)i.next();
-            if(piece.getTypeOfPiece() == TYPE) {
+        for (Piece piece : list) {
+            if (piece.getTypeOfPiece() == TYPE) {
                 selected_pieces_inHand = piece;
                 // TODO: clear print 4 debug.
                 System.out.println("IN HAND, SELECTED PIECE'S TYPE IS " + TYPE);
@@ -140,11 +138,11 @@ public class ShogiBoardComponent extends JComponent{
         // 将棋盤をoffShogi_imgにdraw.
         offShogi_Img.drawImage(ShogiBoard_Img, 0, 0, 802, 500, this);
         paintPiecesOnBoard(g2);
-        Set<Piece> blacks_set = gameBoard.getPieces_inHand_of_black();
-        Set<Piece> whites_set = gameBoard.getPieces_inHand_of_white();
+        ArrayList<Piece> blacks_list = gameBoard.getPieces_inHand_of_black();
+        ArrayList<Piece> whites_list = gameBoard.getPieces_inHand_of_white();
         // offShogi_imgにdrawする.
-        paintPiecesInHand(g2, blacks_set, BLACKS_OFFSET);
-        paintPiecesInHand(g2, whites_set, WHITES_OFFSET);
+        paintPiecesInHand(g2, blacks_list, BLACKS_OFFSET);
+        paintPiecesInHand(g2, whites_list, WHITES_OFFSET);
         // 選択中のマス目が将棋盤のマス目であれば
         if(selected_point.x != -1) paintHighlightsOnBoard(g);
         g2.drawImage(Shogi_Img, 0, 0, 802, 500, this);
@@ -164,10 +162,10 @@ public class ShogiBoardComponent extends JComponent{
             }
         } // double for
     }
-    private void paintPiecesInHand(Graphics g, Set<Piece> set, Point offset) {
+    private void paintPiecesInHand(Graphics g, ArrayList<Piece> list, Point offset) {
         int count_of[] = new int[7];
         int alternative  = 0;
-        for(Iterator ite = set.iterator(); ite.hasNext();) {
+        for(Iterator ite = list.iterator(); ite.hasNext();) {
             Piece piece_inHand = (Piece) ite.next();
             alternative = piece_inHand.isBlack() ? BLACK : WHITE;
             int x = 0, y = 0;
@@ -257,11 +255,11 @@ public class ShogiBoardComponent extends JComponent{
             }
         }
         try {
-	    String img_path = System.getProperty("java.class.path") + "/" + ASSET_IMG_PATH;
-	    File shogi_board_imgFile = new File(img_path + "/ShogiBoard.png");
-	    // TODO: delete 4 debug
-	    System.out.println(shogi_board_imgFile.getCanonicalPath());
-	    System.out.println(System.getProperty("java.class.path"));
+	        String img_path = System.getProperty("java.class.path") + "/" + ASSET_IMG_PATH;
+	        File shogi_board_imgFile = new File(img_path + "/ShogiBoard.png");
+	        // TODO: delete 4 debug
+	        System.out.println(shogi_board_imgFile.getCanonicalPath());
+	        System.out.println(System.getProperty("java.class.path"));
             ShogiBoard_Img = ImageIO.read(shogi_board_imgFile);
             for(int i = 0; i < 14; i++) {
                 String filename_of[] = new String[2];

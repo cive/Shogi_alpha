@@ -3,14 +3,13 @@ package cive.shogi;
 import cive.shogi.Pieces.*;
 
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class GameBoard {
     private Piece board_Arr[][] = new Piece[9][9];
     private boolean turn = true;
-    private Set<Piece> piece_inHand_of_black = new HashSet<>();
-    private Set<Piece> piece_inHand_of_white = new HashSet<>();
+    private ArrayList<Piece> piece_inHand_of_black = new ArrayList<>();
+    private ArrayList<Piece> piece_inHand_of_white = new ArrayList<>();
     public GameBoard() {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
@@ -88,10 +87,10 @@ public class GameBoard {
             piece_inHand_of_black.add(others);
         }
     }
-    public Set<Piece> getPieces_inHand_of_black() {
+    public ArrayList<Piece> getPieces_inHand_of_black() {
         return piece_inHand_of_black;
     }
-    public Set<Piece> getPieces_inHand_of_white() {
+    public ArrayList<Piece> getPieces_inHand_of_white() {
         return piece_inHand_of_white;
     }
 }
