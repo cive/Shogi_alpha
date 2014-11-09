@@ -30,7 +30,7 @@ public class ShogiBoardComponent extends JComponent{
     private Graphics2D offShogi_Img;
     private BufferedImage Pieces_Img[][] = new BufferedImage[2][14];
     private Point selected_point = new Point(-1,-1);
-    private Piece selected_pieces_inHand = new EmptyPiece();
+    private Piece selected_pieces_inHand;
     public ShogiBoardComponent() {
         gameBoard = new GameBoard();
         loadImages();
@@ -54,41 +54,26 @@ public class ShogiBoardComponent extends JComponent{
         }
         return judgements;
     }
-    private void logicOfMovingPieceOnBoard(Point clicked) {
-        if (getSelected_point().x != -1) {
-            Piece that = gameBoard.getPieceOf(getSelected_point().x, getSelected_point().y);
-            // クリックした駒が，ちゃんと手番に合っているかどうか．
-            // あっていれば，trueを返す．
-            boolean matchAlternative = that.isBlack() && gameBoard.isBlack() || that.isWhite() && !gameBoard.isBlack();
-            if (matchAlternative) {
-                Iterator itr = that.getCapableMovePiece(gameBoard, getSelected_point()).iterator();
-                for (; itr.hasNext(); ) {
-                    Point capable_move_point = (Point) itr.next();
-                    boolean canMove = clicked.x == capable_move_point.x && clicked.y == capable_move_point.y;
-                    if (canMove) {
-                        Piece clicked_piece = gameBoard.getPieceOf(clicked);
-                        if (clicked_piece.getTypeOfPiece() > 0) {
-                            gameBoard.addPieceInHand(clicked_piece);
-                        }
-                        gameBoard.setBoard_Arr(that, clicked);
-                        gameBoard.setBoard_Arr(new EmptyPiece(), getSelected_point());
-                        gameBoard.nextTurn();
-                    }
-                }
-            }
-            setSelected_point(new Point(-1, -1));
-        } else {
-            setSelected_point(clicked);
-        }
-    }
     public void selectPieceAt(Point selecting) {
         boolean onBoard = selecting.x >= OFFSET.x && selecting.x <= (OFFSET.x+50*9) && selecting.y >= OFFSET.y && selecting.y <= (OFFSET.y+50*9);
         if(onBoard) {
-            Point clicked_point = new Point((int) ((selecting.x - OFFSET.x) / 50), (int) ((selecting.y - OFFSET.y) / 50));
-            logicOfMovingPieceOnBoard(clicked_point);
+            Point clicked = new Point((int) ((selecting.x - OFFSET.x) / 50), (int) ((selecting.y - OFFSET.y) / 50));
+            // 既に盤上を選択していた時
+            boolean haveSelectedOnBoard = getSelected_point().x != -1;
+            if (haveSelectedOnBoard) {
+                Piece that = gameBoard.getPieceOf(getSelected_point().x, getSelected_point().y);
+                // クリックした駒が，ちゃんと手番に合っているかどうか．
+                // あっていれば，trueを返す．
+                boolean isMatchTurn = that.isBlack() && gameBoard.isBlack() || that.isWhite() && !gameBoard.isBlack();
+                if (isMatchTurn) {
+                    gameBoard.logicOfInside(getSelected_point(), clicked);
+                }
+                setSelected_point(new Point(-1, -1));
+            } else {
+                setSelected_point(clicked);
+            }
         }  else if (!onBoard) {
             // 持ち駒の処理．
-            // TODO: メソッド分割．
             boolean onWhiteBoard_of[];
             onWhiteBoard_of = getJudgementsOfPieceInHand(selecting, WHITES_OFFSET);
             boolean onBlackBoard_of[];
@@ -109,7 +94,7 @@ public class ShogiBoardComponent extends JComponent{
                     selected_pieces_inHand = new EmptyPiece();
                 }
             }
-            selected_point = new Point(-1, -1);
+            setSelected_point(new Point(-1, -1));
         }
         // TODO: clear print 4 debug.
         System.out.println(selected_point);
@@ -120,7 +105,7 @@ public class ShogiBoardComponent extends JComponent{
         boolean couldSelected = false;
         for (Piece piece : list) {
             if (piece.getTypeOfPiece() == TYPE) {
-                selected_pieces_inHand = piece;
+                setSelected_pieces_inHand(piece);
                 // TODO: clear print 4 debug.
                 System.out.println("IN HAND, SELECTED PIECE'S TYPE IS " + TYPE);
                 couldSelected = true;
@@ -294,5 +279,11 @@ public class ShogiBoardComponent extends JComponent{
     }
     public GameBoard getGameBoard() {
         return gameBoard;
+    }
+    public void setSelected_pieces_inHand(Piece selected_pieces_inHand) {
+        this.selected_pieces_inHand = selected_pieces_inHand;
+    }
+    public Piece getSelected_pieces_inHand() {
+        return selected_pieces_inHand;
     }
 }

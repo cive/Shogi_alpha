@@ -8,8 +8,6 @@ import java.util.*;
 public class GameBoard {
     private Piece board_Arr[][] = new Piece[9][9];
     private boolean turn = true;
-    private ArrayList<Piece> piece_inHand_of_black = new ArrayList<>();
-    private ArrayList<Piece> piece_inHand_of_white = new ArrayList<>();
     public GameBoard() {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
@@ -17,7 +15,7 @@ public class GameBoard {
             }
         }
         initGame();
-        //debug
+        // TODO: delete debug
         for(int x = 0; x < 9; x++) {
             for(int y = 0; y < 9; y++) {
                 System.out.print(board_Arr[x][y].getName());
@@ -30,9 +28,7 @@ public class GameBoard {
             }
             System.out.println();
         }
-        //debug
     }
-    // board_Arr[i][j].instanceOf != Cell
     private void initGame() {
         setTurn(true);
         board_Arr = new Piece[][]{
@@ -55,16 +51,16 @@ public class GameBoard {
         // isBlack && getTypeOfPiece > 0 : exist.
     }
     public void setBoard_Arr(Piece piece, Point p) {
-        if(this.canPut(p))board_Arr[p.y][p.x] = piece;
+        if(this.isInGrid(p))board_Arr[p.y][p.x] = piece;
     }
     public Piece getPieceOf(Point p) {
-        if(this.canPut(p))return board_Arr[p.y][p.x];
+        if(this.isInGrid(p))return board_Arr[p.y][p.x];
         else return new EmptyPiece();
     }
     public Piece getPieceOf(int x, int y) {
         return this.getPieceOf(new Point(x, y));
     }
-    public static boolean canPut(Point point) {
+    public static boolean isInGrid(Point point) {
         if(point.x >= 0 && point.x < 9
                 && point.y >= 0 && point.y < 9) return true;
         else return false;
@@ -78,6 +74,26 @@ public class GameBoard {
     public void nextTurn() {
         this.turn = !turn;
     }
+
+    public void logicOfInside(Point move_before, Point move_after) {
+        Piece that = this.getPieceOf(move_before.x, move_before.y);
+        Iterator itr = that.getCapableMovePiece(this, move_before).iterator();
+        for (; itr.hasNext(); ) {
+            Point capable_move_point = (Point) itr.next();
+            boolean canMove = move_after.x == capable_move_point.x && move_after.y == capable_move_point.y;
+            if (canMove) {
+                Piece clicked_piece = this.getPieceOf(move_after);
+                if (clicked_piece.getTypeOfPiece() > 0) {
+                    this.addPieceInHand(clicked_piece);
+                }
+                this.setBoard_Arr(that, move_after);
+                this.setBoard_Arr(new EmptyPiece(), move_before);
+                this.nextTurn();
+            }
+        }
+    }
+    private ArrayList<Piece> piece_inHand_of_black = new ArrayList<>();
+    private ArrayList<Piece> piece_inHand_of_white = new ArrayList<>();
     public void addPieceInHand(Piece others) {
         if(others.isBlack()) {
             others.setTurn(false);
