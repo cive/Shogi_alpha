@@ -48,5 +48,9 @@ Shogi_alpha
 ### Pieces package ###
  - Piecesパッケージには，将棋の駒のクラスがそれぞれ入っています．
 
+## 最後に
+作ってる人が中間報告書で忙しいので代わりに作ってください（ぇ
+
+
 [1]: http://sozai.7gates.net/docs/japanese-chess/
 [2]: http://www.pixiv.net/member_illust.php?mode=medium&illust_id=25263895
