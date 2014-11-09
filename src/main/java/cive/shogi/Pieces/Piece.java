@@ -25,7 +25,7 @@ public abstract class Piece implements ConstantOfPiece{
             } else {
                 canMove = that.getTypeOfPiece() == 0 || (this.isWhite() && that.isBlack());
             }
-            if(board.canPut(other) && canMove) {
+            if(board.isInGrid(other) && canMove) {
                 set.add(other);
 
             }

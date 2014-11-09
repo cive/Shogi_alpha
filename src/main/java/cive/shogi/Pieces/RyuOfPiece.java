@@ -46,7 +46,7 @@ public class RyuOfPiece extends Piece {
             Piece that = board.getPieceOf(other);
             boolean canMove = that.getTypeOfPiece() == 0
                     || this.isBlack() != that.isBlack();
-            if(board.canPut(other) || canMove) {
+            if(board.isInGrid(other) || canMove) {
                 //nop
             } else {
                 set_for_remove.add(remain_point[i]);

@@ -22,16 +22,16 @@ import java.awt.event.KeyEvent;
  * TODO: and more...
  */
 
-public class Main extends JFrame implements ActionListener {
+public class AppMain extends JFrame implements ActionListener {
 
     private ShogiBoardComponent pane;
     Timer timer;
     public static void main(String[] args) {
-        Main frame = new Main();
+        AppMain frame = new AppMain();
         frame.setVisible(true);
     }
 
-    public Main() {
+    public AppMain() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());

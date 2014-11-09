@@ -48,7 +48,7 @@ public class KyoshaOfPiece extends Piece{
         {
             Point other = new Point(mine.x, mine.y+i);
             Piece that = board.getPieceOf(other);
-            if(GameBoard.canPut(other)){
+            if(GameBoard.isInGrid(other)){
                 /**
                  * なぜ下記のようなプログラムになったかというと，
                  * 飛車が初めておけなくなる場所を
