@@ -69,7 +69,7 @@ public class ShogiBoardComponent extends JComponent{
             
             if(haveSelectedInHand){
         		// 持ち駒を置く．
-            	gameBoard.placePieceInHand(selected_pieces_inHand, clicked);
+        		gameBoard.placePieceInHand(selected_pieces_inHand, clicked);
             	
         		// 選択解除
         		selected_pieces_inHand = new EmptyPiece();
@@ -238,6 +238,9 @@ public class ShogiBoardComponent extends JComponent{
             
             // 選択した駒からおける場所へのhighlight.
             for(int x = 0; x < 9; x++) {
+            	if(gameBoard.selected_will_be_niFu(that, x)){
+            		continue;
+            	}
             	for(int y = 0; y < 9; y++) {
             		if (gameBoard.getPieceOf(x, y).getTypeOfPiece() != Piece.NONE){
             			continue;

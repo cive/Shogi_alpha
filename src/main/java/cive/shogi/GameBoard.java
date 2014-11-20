@@ -105,7 +105,7 @@ public class GameBoard {
     }
     public void placePieceInHand(Piece piece, Point pos){
     	// 持ち駒を置けるなら置いて，交代
-    	if(getPieceOf(pos.x, pos.y).getTypeOfPiece() == Piece.NONE){
+    	if(!selected_will_be_niFu(piece, pos.x) && getPieceOf(pos.x, pos.y).getTypeOfPiece() == Piece.NONE){
     		// 持ち駒を置く
     		setBoard_Arr(piece, pos);
     		
@@ -125,6 +125,24 @@ public class GameBoard {
     		nextTurn();
     	}
     }
+    
+    // 与えられた位置が含まれる列に，既に歩があればtrue
+    public boolean selected_will_be_niFu(Piece selected_piece, int x){
+    	boolean ret = false;
+    	// 置こうとしている駒が歩であるか
+    	if(selected_piece.getTypeOfPiece() == Piece.FU){
+    		for(int y = 0; y < 9; y++){
+        		Piece piece = getPieceOf(x, y);
+        		// 自分の駒でかつそれが歩であれば
+        		if(this.isBlack() == piece.isBlack() && piece.getTypeOfPiece() == Piece.FU){
+        			ret = true;
+        			break;
+        		}
+    		}
+    	}
+    	return ret;
+    }
+    
     public ArrayList<Piece> getPieces_inHand_of_black() {
         return piece_inHand_of_black;
     }
