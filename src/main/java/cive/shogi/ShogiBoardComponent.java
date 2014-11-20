@@ -33,6 +33,7 @@ public class ShogiBoardComponent extends JComponent{
     private Piece selected_pieces_inHand;
     public ShogiBoardComponent() {
         gameBoard = new GameBoard();
+        selected_pieces_inHand = new EmptyPiece();
         loadImages();
 
         enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
@@ -55,12 +56,25 @@ public class ShogiBoardComponent extends JComponent{
         return judgements;
     }
     public void selectPieceAt(Point selecting) {
+    	// 盤上の選択
         boolean onBoard = selecting.x >= OFFSET.x && selecting.x <= (OFFSET.x+50*9) && selecting.y >= OFFSET.y && selecting.y <= (OFFSET.y+50*9);
+
+        // 持ち駒を選択中
+        boolean haveSelectedInHand = selected_pieces_inHand.getTypeOfPiece() != Piece.NONE;
+        
         if(onBoard) {
             Point clicked = new Point((int) ((selecting.x - OFFSET.x) / 50), (int) ((selecting.y - OFFSET.y) / 50));
             // 既に盤上を選択していた時
             boolean haveSelectedOnBoard = getSelected_point().x != -1;
-            if (haveSelectedOnBoard) {
+            
+            if(haveSelectedInHand){
+        		// 持ち駒を置く．
+            	gameBoard.placePieceInHand(selected_pieces_inHand, clicked);
+            	
+        		// 選択解除
+        		selected_pieces_inHand = new EmptyPiece();
+            }
+            else if (haveSelectedOnBoard) {
                 Piece that = gameBoard.getPieceOf(getSelected_point().x, getSelected_point().y);
                 // クリックした駒が，ちゃんと手番に合っているかどうか．
                 // あっていれば，trueを返す．
@@ -73,27 +87,32 @@ public class ShogiBoardComponent extends JComponent{
                 setSelected_point(clicked);
             }
         }  else if (!onBoard) {
-            // 持ち駒の処理．
-            boolean onWhiteBoard_of[];
-            onWhiteBoard_of = getJudgementsOfPieceInHand(selecting, WHITES_OFFSET);
-            boolean onBlackBoard_of[];
-            onBlackBoard_of = getJudgementsOfPieceInHand(selecting, BLACKS_OFFSET);
-            ArrayList<Piece> whites_list = gameBoard.getPieces_inHand_of_white();
-            ArrayList<Piece> blacks_list = gameBoard.getPieces_inHand_of_black();
-            boolean couldSelect = false;
-            for(int type = 1; type < 8; type++) {
-                if (onWhiteBoard_of[type-1]) {
-                    couldSelect = setSelected_pieces_inHand(whites_list, type);
+            // 持ち駒の処理．        	
+        	if(haveSelectedInHand){
+        		// 選択解除
+        		selected_pieces_inHand = new EmptyPiece();
+        	}else{
+                boolean onWhiteBoard_of[];
+                onWhiteBoard_of = getJudgementsOfPieceInHand(selecting, WHITES_OFFSET);
+                boolean onBlackBoard_of[];
+                onBlackBoard_of = getJudgementsOfPieceInHand(selecting, BLACKS_OFFSET);
+                ArrayList<Piece> whites_list = gameBoard.getPieces_inHand_of_white();
+                ArrayList<Piece> blacks_list = gameBoard.getPieces_inHand_of_black();
+                boolean couldSelect = false;
+                for(int type = 1; type < 8; type++) {
+                    if (onWhiteBoard_of[type-1]) {
+                        couldSelect = setSelected_pieces_inHand(whites_list, type);
+                    }
+                    if (onBlackBoard_of[type-1]) {
+                        couldSelect = setSelected_pieces_inHand(blacks_list, type);
+                    }
+                    if (couldSelect) {
+                        break;
+                    } else {
+                        selected_pieces_inHand = new EmptyPiece();
+                    }
                 }
-                if (onBlackBoard_of[type-1]) {
-                    couldSelect = setSelected_pieces_inHand(blacks_list, type);
-                }
-                if (couldSelect) {
-                    break;
-                } else {
-                    selected_pieces_inHand = new EmptyPiece();
-                }
-            }
+        	}
             setSelected_point(new Point(-1, -1));
         }
         // TODO: clear print 4 debug.
@@ -129,7 +148,13 @@ public class ShogiBoardComponent extends JComponent{
         paintPiecesInHand(g2, blacks_list, BLACKS_OFFSET);
         paintPiecesInHand(g2, whites_list, WHITES_OFFSET);
         // 選択中のマス目が将棋盤のマス目であれば
-        if(selected_point.x != -1) paintHighlightsOnBoard(g);
+        if(selected_point.x != -1){
+        	paintHighlightsOnBoard(g);
+        }
+        // 持ち駒であれば
+        else if(selected_pieces_inHand.getTypeOfPiece() != Piece.NONE){
+        	paintHighlightsOfTableOfPiecesInHand(g);
+        }
         g2.drawImage(Shogi_Img, 0, 0, 802, 500, this);
         g2.dispose();
     }
@@ -192,7 +217,44 @@ public class ShogiBoardComponent extends JComponent{
      * @param g Graphics
      */
     private void paintHighlightsOfTableOfPiecesInHand(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        Piece that = selected_pieces_inHand;
+        int type = that.getTypeOfPiece();
+        if(type > 0 && ((that.isBlack()) && gameBoard.isBlack() || that.isWhite() && !gameBoard.isBlack())) {
 
+            // TODO: 持ち駒自身のhighlightがまだ
+        	/*
+            Rectangle rect = new Rectangle(
+                    OFFSET.x + GRID * selected_point.x,
+                    OFFSET.y + GRID * selected_point.y,
+                    48,
+                    48
+            );
+            // 選択した駒のhighlight.
+            offShogi_Img.setColor(new Color(255, 0, 0, 90));
+            offShogi_Img.setStroke(new BasicStroke(5.0f));
+            offShogi_Img.draw(rect);
+            */
+            
+            // 選択した駒からおける場所へのhighlight.
+            for(int x = 0; x < 9; x++) {
+            	for(int y = 0; y < 9; y++) {
+            		if (gameBoard.getPieceOf(x, y).getTypeOfPiece() != Piece.NONE){
+            			continue;
+            		}
+            		Point p = new Point(x, y);
+            		Rectangle capable_rect = new Rectangle(
+            				OFFSET.x + GRID * p.x,
+            				OFFSET.y + GRID * p.y,
+                            48,
+                            48
+            		);
+                    offShogi_Img.setColor(new Color(0, 255, 0, 80));
+                    offShogi_Img.draw(capable_rect);
+            	}
+            }
+            
+        }
     }
 
     /**
@@ -201,7 +263,7 @@ public class ShogiBoardComponent extends JComponent{
      */
     private void paintHighlightsOnBoard(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        Piece that  = gameBoard.getPieceOf(selected_point.x, selected_point.y);
+        Piece that = gameBoard.getPieceOf(selected_point.x, selected_point.y);
         int type = that.getTypeOfPiece();
         if(type > 0 && ((that.isBlack()) && gameBoard.isBlack() || that.isWhite() && !gameBoard.isBlack())) {
             Rectangle rect = new Rectangle(

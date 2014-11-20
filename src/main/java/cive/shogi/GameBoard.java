@@ -103,6 +103,28 @@ public class GameBoard {
             piece_inHand_of_black.add(others);
         }
     }
+    public void placePieceInHand(Piece piece, Point pos){
+    	// 持ち駒を置けるなら置いて，交代
+    	if(getPieceOf(pos.x, pos.y).getTypeOfPiece() == Piece.NONE){
+    		// 持ち駒を置く
+    		setBoard_Arr(piece, pos);
+    		
+    		// 置いた持ち駒を減らす
+	        Iterator<Piece> ite;
+    		if(piece.isBlack()){
+    			ite = piece_inHand_of_black.iterator();
+    		}else{
+    			ite = piece_inHand_of_white.iterator();
+    		}
+	        while(ite.hasNext()){
+	            if(ite.next().getTypeOfPiece() == piece.getTypeOfPiece()){
+	            	ite.remove();
+	            	break;
+	            }
+	        }
+    		nextTurn();
+    	}
+    }
     public ArrayList<Piece> getPieces_inHand_of_black() {
         return piece_inHand_of_black;
     }
