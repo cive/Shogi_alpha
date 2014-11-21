@@ -13,8 +13,6 @@ import java.awt.event.KeyEvent;
  * TODO: 持ち駒の処理．
  * TODO: HIGHLIGHTさせる．
  * TODO: Click処理．→
- * TODO: とった駒を表示. CLEARED.
- * TODO: とった駒を将棋盤におけるようにする. CLEARED.
  * TODO: 成るとか，成らないとか．
  * TODO: 王手したらエフェクト．
  * TODO: 手詰まりであれば投了エフェクト．
@@ -68,6 +66,6 @@ public class AppMain extends JFrame implements ActionListener {
         return menuBar;
     }
     public void actionPerformed(ActionEvent e){
-        this.setTitle("しょうぎったー : " + (pane.getGameBoard().isBlack()?"先手":"後手") + "の手番です．");
+        this.setTitle("twitter将棋(alpha ver.) : " + (pane.getGameBoard().isBlack()?"先手":"後手") + "の手番です．");
     }
 }
