@@ -134,7 +134,7 @@ public class GameBoard {
     		for(int y = 0; y < 9; y++){
         		Piece piece = getPieceOf(x, y);
         		// 自分の駒でかつそれが歩であれば
-        		if(this.isBlack() == piece.isBlack() && piece.getTypeOfPiece() == Piece.FU){
+        		if(!(this.isBlack() ^ piece.isBlack() ) && piece.getTypeOfPiece() == Piece.FU){
         			ret = true;
         			break;
         		}
