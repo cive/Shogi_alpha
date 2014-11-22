@@ -19,26 +19,31 @@ public class GameBoardTest {
 
     @Test
     public void isInGridが盤内かどうかを返す() throws Exception {
-        GameBoard gameBoard = new GameBoard();
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
-                assertTrue(gameBoard.isInGrid(new Point(i,j)));
+                assertTrue(GameBoard.isInGrid(new Point(i,j)));
             }
         }
         for(int i = -1; i > -3; i--) {
             for(int j = -1; j > -3; j--) {
-                assertFalse(gameBoard.isInGrid(new Point(i,j)));
+                assertFalse(GameBoard.isInGrid(new Point(i,j)));
             }
         }
     }
 
     @Test
-    public void testIsBlack() throws Exception {
-
+    public void 盤上で駒を移動できるかを判定する() {
+        GameBoard gameBoard = new GameBoard();
+        assertTrue(gameBoard.canPlaceInside(new Point(6,6), new Point(6,5)));
+        assertFalse(gameBoard.canPlaceInside(new Point(7,1), new Point(6,2)));
     }
 
     @Test
-    public void testNextTurn() throws Exception {
-
+    public void nextTurnで手番を変える() {
+        GameBoard gameBoard = new GameBoard();
+        assertTrue(gameBoard.isBlack());
+        gameBoard.nextTurn();
+        assertFalse(gameBoard.isBlack());
     }
+
 }
