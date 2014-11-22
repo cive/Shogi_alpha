@@ -75,26 +75,33 @@ public class GameBoard {
         this.turn = !turn;
     }
 
-    public void logicOfInside(Point move_before, Point move_after) {
+    public boolean canPlaceInside(Point move_before, Point move_after) {
         Piece that = this.getPieceOf(move_before.x, move_before.y);
         Iterator itr = that.getCapableMovePiece(this, move_before).iterator();
         for (; itr.hasNext(); ) {
             Point capable_move_point = (Point) itr.next();
             boolean canMove = move_after.x == capable_move_point.x && move_after.y == capable_move_point.y;
             if (canMove) {
-                Piece clicked_piece = this.getPieceOf(move_after);
-                if (clicked_piece.getTypeOfPiece() > 0) {
-                    this.addPieceInHand(clicked_piece);
-                }
-                this.setBoard_Arr(that, move_after);
-                this.setBoard_Arr(new EmptyPiece(), move_before);
-                this.nextTurn();
+                return true;
             }
         }
+        return false;
     }
+
+    public void placePieceInside(Point move_before, Point move_after) {
+        Piece before = this.getPieceOf(move_before.x, move_before.y);
+        Piece after = this.getPieceOf(move_after.x, move_after.y);
+        if(after.getTypeOfPiece() > 0) {
+            this.addEachPieceInHand(after);
+        }
+        this.setBoard_Arr(before, move_after);
+        this.setBoard_Arr(new EmptyPiece(), move_before);
+        this.nextTurn();
+    }
+
     private ArrayList<Piece> piece_inHand_of_black = new ArrayList<>();
     private ArrayList<Piece> piece_inHand_of_white = new ArrayList<>();
-    public void addPieceInHand(Piece others) {
+    public void addEachPieceInHand(Piece others) {
         if(others.isBlack()) {
             others.setTurn(false);
             piece_inHand_of_white.add(others);

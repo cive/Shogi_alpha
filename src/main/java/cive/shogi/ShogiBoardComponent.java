@@ -67,7 +67,7 @@ public class ShogiBoardComponent extends JComponent{
             // 既に盤上を選択していた時
             boolean haveSelectedOnBoard = getSelected_point().x != -1;
             
-            if(haveSelectedInHand){
+            if (haveSelectedInHand) {
         		// 持ち駒を置く．
         		gameBoard.placePieceInHand(selected_pieces_inHand, clicked);
             	
@@ -79,8 +79,8 @@ public class ShogiBoardComponent extends JComponent{
                 // クリックした駒が，ちゃんと手番に合っているかどうか．
                 // あっていれば，trueを返す．
                 boolean isMatchTurn = that.isBlack() && gameBoard.isBlack() || that.isWhite() && !gameBoard.isBlack();
-                if (isMatchTurn) {
-                    gameBoard.logicOfInside(getSelected_point(), clicked);
+                if (isMatchTurn && gameBoard.canPlaceInside(getSelected_point(), clicked)) {
+                    gameBoard.placePieceInside(getSelected_point(), clicked);
                 }
                 setSelected_point(new Point(-1, -1));
             } else {
@@ -88,10 +88,10 @@ public class ShogiBoardComponent extends JComponent{
             }
         }  else if (!onBoard) {
             // 持ち駒の処理．        	
-        	if(haveSelectedInHand){
+        	if (haveSelectedInHand) {
         		// 選択解除
         		selected_pieces_inHand = new EmptyPiece();
-        	}else{
+        	} else {
                 boolean onWhiteBoard_of[];
                 onWhiteBoard_of = getJudgementsOfPieceInHand(selecting, WHITES_OFFSET);
                 boolean onBlackBoard_of[];
