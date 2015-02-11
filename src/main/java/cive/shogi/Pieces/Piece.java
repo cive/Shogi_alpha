@@ -53,5 +53,22 @@ public abstract class Piece implements ConstantOfPiece{
     public final void setTurn(boolean turn) {
         this.turn = turn;
     };
-
+    public final boolean isEnemyFor(Piece p) {
+        if(p.getTypeOfPiece() == 0) {
+            return false;
+        } else if((this.isBlack() && p.isWhite()) || (this.isWhite() && p.isBlack())){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public final boolean isFriendFor(Piece p) {
+        if(p.getTypeOfPiece() == 0) {
+            return false;
+        } else if((this.isBlack() && p.isBlack()) || (this.isWhite() && p.isWhite())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

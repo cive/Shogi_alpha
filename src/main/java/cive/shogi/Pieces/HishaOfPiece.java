@@ -33,18 +33,16 @@ public class HishaOfPiece extends Piece {
             Point p = (Point)i.next();
             set.add(new Point(p.x+point.x,p.y+point.y));
         }
-        set.removeAll(getSetToNeedToRemove(board, true, true, point));
-        set.removeAll(getSetToNeedToRemove(board, false, true, point));
-        set.removeAll(getSetToNeedToRemove(board, true, false, point));
-        set.removeAll(getSetToNeedToRemove(board, false, false, point));
+        set.removeAll(getSetToNeedToRemove(board, true, 1, point));
+        set.removeAll(getSetToNeedToRemove(board, false, 1, point));
+        set.removeAll(getSetToNeedToRemove(board, true, -1, point));
+        set.removeAll(getSetToNeedToRemove(board, false, -1, point));
         return set;
     };
-    private Set<Point> getSetToNeedToRemove(GameBoard board, boolean axis, boolean direction, Point mine) {
+    private Set<Point> getSetToNeedToRemove(GameBoard board, boolean axis, int direction, Point mine) {
         Set<Point> set_for_remove = new HashSet<Point>();
         boolean removeFlag = false;
-        for(int i = direction ?     1  :    -1;
-                     direction ? i < 9 : i > -9;)
-        {
+        for(int i = direction; -9 < i && i < 9; i += direction) {
             Point other = new Point(mine.x+(axis?i:0), mine.y+(axis?0:i));
             Piece that = board.getPieceOf(other);
             if(GameBoard.isInGrid(other)){
@@ -53,28 +51,16 @@ public class HishaOfPiece extends Piece {
                  * 飛車が初めておけなくなる場所を
                  * 見つけなくてはならなかったから．
                  */
-                boolean canMove;
-                if(this.isBlack()) {
-                    canMove = that.getTypeOfPiece() == 0 || (this.isBlack() && that.isWhite());
-                } else {
-                    canMove = that.getTypeOfPiece() == 0 || (this.isWhite() && that.isBlack());
-                }
-                if(canMove && !removeFlag) {
-                } else {
+                if(removeFlag) {
+                    set_for_remove.add(other);
+                } else if(this.isEnemyFor(that)){
+                    removeFlag = true;
+                } else if(this.isFriendFor(that)) {
+                    removeFlag = true;
                     set_for_remove.add(other);
                 }
             } else {
                 set_for_remove.add(other);
-            }
-            if(this.isBlack() && that.isWhite() || this.isBlack() && that.isBlack()) {
-                removeFlag = true;
-            } else if (this.isWhite() && that.isBlack() || this.isWhite() && that.isWhite()) {
-                removeFlag = true;
-            }
-            if(direction) {
-                i++;
-            } else {
-                i--;
             }
         }
         return set_for_remove;
