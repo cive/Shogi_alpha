@@ -4,6 +4,7 @@ import cive.shogi.GameBoard;
 
 import java.awt.*;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class RyuOfPiece extends Piece {
@@ -32,14 +33,22 @@ public class RyuOfPiece extends Piece {
     }
     @Override
     public Set<Point> getCapableMovePiece(GameBoard board, Point point) {
-        Set<Point> set = new HashSet<Point>();
-        Piece hisha = new HishaOfPiece();
-        set.addAll(hisha.getCapableMovePiece(board,point));
+        Set<Point> rule_set = new HashSet<>();
+        Set<Point> set = new HashSet<>();
+        rule_set.addAll(getRuleOfPiece());
+	for(Iterator i = rule_set.iterator(); i.hasNext();) {
+            Point p = (Point)i.next();
+	    set.add(new Point(p.x+point.x, p.y+point.y));
+	}
+        set.removeAll(getSetToRemove(board, true, 1, point));
+        set.removeAll(getSetToRemove(board, true, -1, point));
+	set.removeAll(getSetToRemove(board, false, 1, point));
+	set.removeAll(getSetToRemove(board, false, -1, point));
         Point remain_point[] = {new Point(-1,-1),new Point(-1,1),new Point(1,-1),new Point(1,1)};
-        set.removeAll(getSetToNeedToRemove(board,remain_point,point));
+        set.removeAll(getSetToRemove(board,remain_point,point));
         return set;
     }
-    public Set<Point> getSetToNeedToRemove(GameBoard board, Point[] remain_point, Point point) {
+    private Set<Point> getSetToRemove(GameBoard board, Point[] remain_point, Point point) {
         Set<Point> set_for_remove = new HashSet<>();
         for(int i = 0; i < 4; i++) {
             Point other = new Point(remain_point[i].x+point.x, remain_point[i].y+point.y);
@@ -54,4 +63,26 @@ public class RyuOfPiece extends Piece {
         }
         return set_for_remove;
     }
+    private Set<Point> getSetToRemove(GameBoard board, boolean axis, int direction, Point mine) {
+        Set<Point> set_for_remove = new HashSet<Point>();
+        boolean removeFlag = false;
+        for(int i = direction; -9 < i && i < 9; i += direction) {
+            Point other = new Point(mine.x+(axis?i:0), mine.y+(axis?0:i));
+            Piece that = board.getPieceOf(other);
+            if(GameBoard.isInGrid(other)){
+                if(removeFlag) {
+                    set_for_remove.add(other);
+                } else if(this.isEnemyFor(that)){
+                    removeFlag = true;
+                } else if(this.isFriendFor(that)) {
+                    removeFlag = true;
+                    set_for_remove.add(other);
+                }
+            } else {
+                set_for_remove.add(other);
+            }
+        }
+        return set_for_remove;
+    }
+
 }

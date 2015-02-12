@@ -76,14 +76,16 @@ public abstract class Piece implements ConstantOfPiece{
             return false;
         }
     }
-    public final Integer getPromoteType() {
+    public final Piece getPromotePiece() {
 	if(getTypeOfPiece() >= Piece.FU && getTypeOfPiece() <= Piece.GIN) {
-		return Piece.NARIKIN;
+		Piece p = new NarikinOfPiece();
+		p.setPre_typeOfPiece(getTypeOfPiece());
+		return p;
 	} else if(getTypeOfPiece() == Piece.KAKU) {
-		return Piece.UMA;
+		return new UmaOfPiece();
 	} else if(getTypeOfPiece() == Piece.HISHA) {
-		return Piece.RYU;
+		return new RyuOfPiece();
 	}
-	return Piece.NONE;
+	return new EmptyPiece();
     }
 }

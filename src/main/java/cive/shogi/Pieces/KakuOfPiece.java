@@ -40,17 +40,12 @@ public class KakuOfPiece extends Piece {
     };
 
     private Set<Point> getSetToNeedToRemove(GameBoard board, boolean axis, int direction, Point mine) {
-        Set<Point> set_for_remove = new HashSet<Point>();
+         Set<Point> set_for_remove = new HashSet<Point>();
         boolean removeFlag = false;
         for(int i = direction; -9 < i && i < 9; i += direction) {
             Point other = new Point(mine.x+(axis?i:-i), mine.y+i);
             Piece that = board.getPieceOf(other);
             if(GameBoard.isInGrid(other)){
-                /**
-                 * なぜ下記のようなプログラムになったかというと，
-                 * 飛車が初めておけなくなる場所を
-                 * 見つけなくてはならなかったから．
-                 */
                 if(removeFlag) {
                     set_for_remove.add(other);
                 } else if(this.isEnemyFor(that)){
@@ -65,7 +60,7 @@ public class KakuOfPiece extends Piece {
         }
         return set_for_remove;
     }
-    @Override
+   @Override
     public Integer getTypeOfPiece() {
         return Piece.KAKU;
     }

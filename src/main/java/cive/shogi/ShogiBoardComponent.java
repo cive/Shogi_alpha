@@ -80,8 +80,25 @@ public class ShogiBoardComponent extends JComponent{
                 // あっていれば，trueを返す．
                 boolean isMatchTurn = that.getTypeOfPiece() != Piece.NONE && that.isBlack() && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn();
                 if (isMatchTurn && gameBoard.canPlaceInside(getSelected_point(), clicked)) {
-		    gameBoard.placePieceInside(getSelected_point(), clicked);
-		    setSelected_point(new Point(-1, -1));
+	            // なり駒するかの判定
+		    if(gameBoard.canPromote(getSelected_point()) || gameBoard.canPromote(clicked, getSelected_point())) {
+                        System.out.println("can promote");
+			Object[] options = {"はい", "いいえ", "キャンセル"};
+			int reply = JOptionPane.showOptionDialog(null, "成りますか？", "成駒", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
+			if(reply == JOptionPane.YES_OPTION) {
+				Piece pr = that.getPromotePiece();
+				pr.setTurn(gameBoard.isBlacksTurn());
+				gameBoard.setBoard_Arr(pr, getSelected_point());
+				gameBoard.placePieceInside(getSelected_point(), clicked);
+				setSelected_point(new Point(-1, -1));
+			} else if(reply == JOptionPane.NO_OPTION) {
+				gameBoard.placePieceInside(getSelected_point(), clicked);
+				setSelected_point(new Point(-1, -1));
+			}
+		    } else {
+                        gameBoard.placePieceInside(getSelected_point(), clicked);
+			setSelected_point(new Point(-1, -1));
+		    }
                 } else {
                     setSelected_point(clicked);
 		}

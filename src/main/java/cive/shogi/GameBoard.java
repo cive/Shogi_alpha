@@ -107,12 +107,35 @@ public class GameBoard {
     private ArrayList<Piece> piece_inHand_of_black = new ArrayList<>();
     private ArrayList<Piece> piece_inHand_of_white = new ArrayList<>();
     public void addEachPieceInHand(Piece others) {
+	Piece p;
+	switch(others.getPre_typeOfPiece()) {
+	    case Piece.FU:
+                p = new FuOfPiece();
+	        break;
+	    case Piece.KYOSHA:
+                p = new KyoshaOfPiece();
+	        break;
+	    case Piece.KEIMA:
+	        p = new KeimaOfPiece();
+	        break;
+       	    case Piece.GIN:
+	        p = new GinOfPiece();
+	        break;
+            case Piece.KAKU:
+       	        p = new KakuOfPiece();
+	        break;
+	    case Piece.HISHA:
+	        p = new HishaOfPiece();
+	        break;
+	    default:
+	        p = others;
+	}
         if(others.isBlack()) {
-            others.setTurn(false);
-            piece_inHand_of_white.add(others);
+	    p.setTurn(false);
+            piece_inHand_of_white.add(p);
         } else {
-            others.setTurn(true);
-            piece_inHand_of_black.add(others);
+	    p.setTurn(true);
+            piece_inHand_of_black.add(p);
         }
     }
     public void placePieceInHand(Piece piece, Point pos){
@@ -157,10 +180,26 @@ public class GameBoard {
     public boolean canPromote(Point p) {
 	boolean bPromote = 0 <= p.y && p.y <= 2;
 	boolean wPromote = 6 <= p.y && p.y <= 8;
-	if(this.isBlacksTurn() && bPromote) {
+	Piece piece = this.getPieceOf(p);
+	int type = piece.getTypeOfPiece();
+	boolean canPromoteForType = (type >= Piece.FU && type <= Piece.GIN) || type == Piece.KAKU || type == Piece.HISHA;
+	if(this.isBlacksTurn() && bPromote && canPromoteForType) {
 		return true;
-	} else if(!this.isBlacksTurn() && wPromote) {
+	} else if(!this.isBlacksTurn() && wPromote && canPromoteForType) {
 		return true;
+	}
+	return false;
+    }
+    public boolean canPromote(Point p, Point mine) {
+	boolean bPromote = 0 <= p.y && p.y <= 2;
+	boolean wPromote = 6 <= p.y && p.y <= 8;
+	Piece piece = this.getPieceOf(mine);
+	int type = piece.getTypeOfPiece();
+	boolean canPromoteForType = (type >= Piece.FU && type <= Piece.GIN) || type == Piece.KAKU || type == Piece.HISHA;
+	if(this.isBlacksTurn() && bPromote && canPromoteForType) {
+	    return true;
+	} else if (!this.isBlacksTurn() && wPromote && canPromoteForType) {
+	    return true;
 	}
 	return false;
     }
