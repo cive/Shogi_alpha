@@ -52,7 +52,12 @@ public abstract class Piece implements ConstantOfPiece{
     }
     public final void setTurn(boolean turn) {
         this.turn = turn;
-    };
+    }
+    /**
+     * 駒に対してもう一方の駒が敵か判定する
+     * @param otherPiece 敵かどうか判定したい駒
+     * @return 引数に対して敵であればtrueを返す.
+     */
     public final boolean isEnemyFor(Piece p) {
         if(p.getTypeOfPiece() == 0) {
             return false;
@@ -70,5 +75,15 @@ public abstract class Piece implements ConstantOfPiece{
         } else {
             return false;
         }
+    }
+    public final Integer getPromoteType() {
+	if(getTypeOfPiece() >= Piece.FU && getTypeOfPiece() <= Piece.GIN) {
+		return Piece.NARIKIN;
+	} else if(getTypeOfPiece() == Piece.KAKU) {
+		return Piece.UMA;
+	} else if(getTypeOfPiece() == Piece.HISHA) {
+		return Piece.RYU;
+	}
+	return Piece.NONE;
     }
 }

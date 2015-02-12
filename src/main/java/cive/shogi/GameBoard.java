@@ -154,6 +154,16 @@ public class GameBoard {
     	}
     	return ret;
     }
+    public boolean canPromote(Point p) {
+	boolean bPromote = 0 <= p.y && p.y <= 2;
+	boolean wPromote = 6 <= p.y && p.y <= 8;
+	if(this.isBlacksTurn() && bPromote) {
+		return true;
+	} else if(!this.isBlacksTurn() && wPromote) {
+		return true;
+	}
+	return false;
+    }
 
     public ArrayList<Piece> getPieces_inHand_of_black() {
         return piece_inHand_of_black;

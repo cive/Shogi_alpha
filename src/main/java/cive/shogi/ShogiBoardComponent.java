@@ -80,7 +80,7 @@ public class ShogiBoardComponent extends JComponent{
                 // あっていれば，trueを返す．
                 boolean isMatchTurn = that.getTypeOfPiece() != Piece.NONE && that.isBlack() && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn();
                 if (isMatchTurn && gameBoard.canPlaceInside(getSelected_point(), clicked)) {
-                    gameBoard.placePieceInside(getSelected_point(), clicked);
+		    gameBoard.placePieceInside(getSelected_point(), clicked);
 		    setSelected_point(new Point(-1, -1));
                 } else {
                     setSelected_point(clicked);
@@ -237,7 +237,7 @@ public class ShogiBoardComponent extends JComponent{
             offShogi_Img.setStroke(new BasicStroke(5.0f));
             offShogi_Img.draw(rect);
             */
-            
+
             // 選択した駒からおける場所へのhighlight.
             for(int x = 0; x < 9; x++) {
             	if(gameBoard.selected_will_be_niFu(that, x)){
