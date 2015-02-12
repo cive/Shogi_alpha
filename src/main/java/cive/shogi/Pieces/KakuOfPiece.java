@@ -16,7 +16,7 @@ public class KakuOfPiece extends Piece {
     @Override
     public Set<Point> getRuleOfPiece() {
         Set<Point> set = new HashSet<Point>();
-        for(int i = -9; i < 10; i++) {
+        for(int i = -8; i < 9; i++) {
             if(i == 0) continue;
             set.add(new Point(i, i));
             set.add(new Point(-i, i));

@@ -78,11 +78,13 @@ public class ShogiBoardComponent extends JComponent{
                 Piece that = gameBoard.getPieceOf(getSelected_point().x, getSelected_point().y);
                 // クリックした駒が，ちゃんと手番に合っているかどうか．
                 // あっていれば，trueを返す．
-                boolean isMatchTurn = that.isBlack() && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn();
+                boolean isMatchTurn = that.getTypeOfPiece() != Piece.NONE && that.isBlack() && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn();
                 if (isMatchTurn && gameBoard.canPlaceInside(getSelected_point(), clicked)) {
                     gameBoard.placePieceInside(getSelected_point(), clicked);
-                }
-                setSelected_point(new Point(-1, -1));
+		    setSelected_point(new Point(-1, -1));
+                } else {
+                    setSelected_point(clicked);
+		}
             } else {
                 setSelected_point(clicked);
             }
