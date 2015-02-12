@@ -41,9 +41,9 @@ public class GameBoardTest {
     @Test
     public void nextTurnで手番を変える() {
         GameBoard gameBoard = new GameBoard();
-        assertTrue(gameBoard.isBlack());
+        assertTrue(gameBoard.isBlacksTurn());
         gameBoard.nextTurn();
-        assertFalse(gameBoard.isBlack());
+        assertFalse(gameBoard.isBlacksTurn());
     }
 
 }

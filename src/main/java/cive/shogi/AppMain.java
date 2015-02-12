@@ -66,6 +66,6 @@ public class AppMain extends JFrame implements ActionListener {
         return menuBar;
     }
     public void actionPerformed(ActionEvent e){
-        this.setTitle("twitter将棋(alpha ver.) : " + (pane.getGameBoard().isBlack()?"先手":"後手") + "の手番です．");
+        this.setTitle("twitter将棋(alpha ver.) : " + (pane.getGameBoard().isBlacksTurn()?"先手":"後手") + "の手番です．");
     }
 }

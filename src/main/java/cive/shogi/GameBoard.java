@@ -1,3 +1,8 @@
+/**
+ * GameBoard.java
+ * 将棋盤の盤上の処理はここで行う
+ */
+
 package cive.shogi;
 
 import cive.shogi.Pieces.*;
@@ -65,7 +70,7 @@ public class GameBoard {
                 && point.y >= 0 && point.y < 9) return true;
         else return false;
     }
-    public boolean isBlack() {
+    public boolean isBlacksTurn() {
         return turn;
     }
     public void setTurn(boolean turn) {
@@ -115,7 +120,7 @@ public class GameBoard {
     	if(!selected_will_be_niFu(piece, pos.x) && getPieceOf(pos.x, pos.y).getTypeOfPiece() == Piece.NONE){
     		// 持ち駒を置く
     		setBoard_Arr(piece, pos);
-    		
+
     		// 置いた持ち駒を減らす
 	        Iterator<Piece> ite;
     		if(piece.isBlack()){
@@ -132,7 +137,7 @@ public class GameBoard {
     		nextTurn();
     	}
     }
-    
+
     // 与えられた位置が含まれる列に，既に歩があればtrue
     public boolean selected_will_be_niFu(Piece selected_piece, int x){
     	boolean ret = false;
@@ -141,7 +146,7 @@ public class GameBoard {
     		for(int y = 0; y < 9; y++){
         		Piece piece = getPieceOf(x, y);
         		// 自分の駒でかつそれが歩であれば
-        		if(!(this.isBlack() ^ piece.isBlack() ) && piece.getTypeOfPiece() == Piece.FU){
+        		if(!(this.isBlacksTurn() ^ piece.isBlack() ) && piece.getTypeOfPiece() == Piece.FU){
         			ret = true;
         			break;
         		}
@@ -149,7 +154,7 @@ public class GameBoard {
     	}
     	return ret;
     }
-    
+
     public ArrayList<Piece> getPieces_inHand_of_black() {
         return piece_inHand_of_black;
     }
