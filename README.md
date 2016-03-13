@@ -17,14 +17,14 @@ Shogi_alpha
  - mkdir out/resources
  - cp -r src/resources out/resources
  - cd out
- - java cive.shogi.Main
+ - java cive.shogi.AppMain
  - バッチファイル書いてない()
 
 ### Mavenで管理するようにしました
  - Maven version 3.2.1
  - mvn install
  - mvn compile
- - java -cp target/classes cive.shogi.Main
+ - java -cp target/classes cive.shogi.AppMain
  - 楽ちん。
 
 ###とりあえずテスト書けよといわれた気がする...###
@@ -34,9 +34,8 @@ Shogi_alpha
  - [100g98円 さま][2]
 
 ###プログラム内部の説明 ###
-### Main.java ###
+### AppMain.java ###
  - TODOLISTがここに書かれています．進捗出したいです．
- - その他，特に説明は不要かと思います．
 
 ### GameBoardComponent.java ###
  - コンストラクタで，宣言しているのを見ていただければわかると思いますが，マウスがクリックされたときの動作として，selectPieceAt(Point p)が実行されます．
@@ -47,9 +46,6 @@ Shogi_alpha
 
 ### Pieces package ###
  - Piecesパッケージには，将棋の駒のクラスがそれぞれ入っています．
-
-## 最後に
-作ってる人が中間報告書で忙しいので代わりに作ってください（ぇ
 
 
 [1]: http://sozai.7gates.net/docs/japanese-chess/
