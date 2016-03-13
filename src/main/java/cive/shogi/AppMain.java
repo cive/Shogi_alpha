@@ -60,12 +60,25 @@ public class AppMain extends JFrame implements ActionListener {
         });
         view.add(menuResize_window);
 
+        // View Menu
+        JMenu tool = new JMenu("ツール(T)");
+        view.setMnemonic(KeyEvent.VK_T);
+        JMenuItem menuInit = new JMenuItem();
+        menuInit.setText("最初から(I)");
+        menuInit.setMnemonic(KeyEvent.VK_I);
+        menuInit.addActionListener(e -> {
+            pane.getGameBoard().initGame();
+            pane.repaint();
+        });
+        tool.add(menuInit);
+
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
         menuBar.add(view);
+        menuBar.add(tool);
         return menuBar;
     }
     public void actionPerformed(ActionEvent e){
-        this.setTitle("twitter将棋(alpha ver.) : " + (pane.getGameBoard().isBlacksTurn()?"先手":"後手") + "の手番です．");
+        this.setTitle("twitter将棋(alpha ver.) : " + (pane.getGameBoard().isAheadsTurn()?"先手":"後手") + "の手番です．");
     }
 }

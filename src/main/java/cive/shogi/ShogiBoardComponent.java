@@ -11,29 +11,26 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 public class ShogiBoardComponent extends JComponent{
-    private static final int BLACK = 0;
-    private static final int WHITE = 1;
     private static final String ASSET_IMG_PATH = "img";
 
     private static final Point OFFSET = new Point(151 + 26, 0 + 26);
     private static final int GRID = 50;
     private static final Point OFFSET_OF_GRID = new Point(1, 2);
-    private static final Point BLACKS_OFFSET = new Point(650,300);
-    private static final Point WHITES_OFFSET = new Point(0, 0);
+    private static final Point AHEAD_OFFSET = new Point(650,300);
+    private static final Point BEHIND_OFFSET = new Point(0, 0);
     private GameBoard gameBoard;
     private BufferedImage Shogi_Img;
     private BufferedImage ShogiBoard_Img;
     private Graphics2D offShogi_Img;
     private BufferedImage Pieces_Img[][] = new BufferedImage[2][14];
     private Point selected_point = new Point(-1,-1);
-    private Piece selected_pieces_inHand;
+    private Piece selected_piece_in_hand;
     public ShogiBoardComponent() {
         gameBoard = new GameBoard();
-        selected_pieces_inHand = new EmptyPiece();
+        selected_piece_in_hand = new EmptyPiece();
         loadImages();
 
         enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
@@ -43,114 +40,91 @@ public class ShogiBoardComponent extends JComponent{
            }
         });
     }
-    private boolean[] getJudgementsOfPieceInHand(Point p, Point offset) {
-        boolean judgements[] = new boolean[7];
-        judgements[Piece.FU -1] = p.x >= offset.x && p.x <= (offset.x+150) &&
-                p.y >= offset.y && p.y <= (offset.y+50);
-        for(int i = 2; i < 8; i+=2) {
-            judgements[i-1] = p.x >= offset.x    && p.x <= (offset.x+75) &&
-                    p.y >= offset.y+i*25 && p.y <= (offset.y+50+i*25);
-            judgements[i]=p.x >= (offset.x+75)    && p.x <= (offset.x+150) &&
-                    p.y >= offset.y+i*25 && p.y <= (offset.y+50+i*25);
+    private Integer getTypeOfPieceInHand(Point clicked, Point offset) {
+        boolean judge;
+        judge = clicked.x >= offset.x && clicked.x <= (offset.x+150) &&
+                clicked.y >= offset.y && clicked.y <= (offset.y+50);
+        if(judge)return Piece.FU;
+        for(int type = 2; type < 8; type+=2) {
+            judge = clicked.x >= offset.x    && clicked.x <= (offset.x+75) &&
+                    clicked.y >= offset.y+type*25 && clicked.y <= (offset.y+50+type*25);
+            if(judge)return type;
+            judge=clicked.x >= (offset.x+75)    && clicked.x <= (offset.x+150) &&
+                    clicked.y >= offset.y+type*25 && clicked.y <= (offset.y+50+type*25);
+            if(judge)return type+1;
         }
-        return judgements;
+        return Piece.NONE;
     }
-    public void selectPieceAt(Point selecting) {
+    public void selectPieceAt(Point clicked) {
     	// 盤上の選択
-        boolean onBoard = selecting.x >= OFFSET.x && selecting.x <= (OFFSET.x+50*9) && selecting.y >= OFFSET.y && selecting.y <= (OFFSET.y+50*9);
+        boolean onBoard = clicked.x >= OFFSET.x && clicked.x <= (OFFSET.x+50*9) && clicked.y >= OFFSET.y && clicked.y <= (OFFSET.y+50*9);
 
         // 持ち駒を選択中
-        boolean haveSelectedInHand = selected_pieces_inHand.getTypeOfPiece() != Piece.NONE;
+        boolean haveSelectedInHand = selected_piece_in_hand.getTypeOfPiece() != Piece.NONE;
 
         if(onBoard) {
-            Point clicked = new Point((int) ((selecting.x - OFFSET.x) / 50), (int) ((selecting.y - OFFSET.y) / 50));
+            Point clicked_on_board = new Point((int) ((clicked.x - OFFSET.x) / 50), (int) ((clicked.y - OFFSET.y) / 50));
             // 既に盤上を選択していた時
             boolean haveSelectedOnBoard = getSelected_point().x != -1;
 
             if (haveSelectedInHand) {
         		// 持ち駒を置く．
-        		gameBoard.placePieceInHand(selected_pieces_inHand, clicked);
+        		gameBoard.placePieceInHand(selected_piece_in_hand, clicked_on_board);
 
         		// 選択解除
-        		selected_pieces_inHand = new EmptyPiece();
-            }
-            else if (haveSelectedOnBoard) {
-                Piece that = gameBoard.getPieceOf(getSelected_point().x, getSelected_point().y);
-                // クリックした駒が，ちゃんと手番に合っているかどうか．
-                // あっていれば，trueを返す．
-                boolean isMatchTurn = that.getTypeOfPiece() != Piece.NONE && that.isBlack() && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn();
-                if (isMatchTurn && gameBoard.canPlaceInside(getSelected_point(), clicked)) {
+        		selected_piece_in_hand = new EmptyPiece();
+            } else if (haveSelectedOnBoard) {
+                if (gameBoard.canPlaceInside(getSelected_point(), clicked_on_board)) {
 	            // なり駒するかの判定
-		    if(gameBoard.canPromote(getSelected_point()) || gameBoard.canPromote(clicked, getSelected_point())) {
+		            if(gameBoard.getAttacker().getPieceOnBoardAt(getSelected_point()).canPromote(clicked_on_board, gameBoard.isAheadsTurn())) {
                         System.out.println("can promote");
-			Object[] options = {"はい", "いいえ", "キャンセル"};
-			int reply = JOptionPane.showOptionDialog(null, "成りますか？", "成駒", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
-			if(reply == JOptionPane.YES_OPTION) {
-				Piece pr = that.getPromotePiece();
-				pr.setTurn(gameBoard.isBlacksTurn());
-				gameBoard.setBoard_Arr(pr, getSelected_point());
-				gameBoard.placePieceInside(getSelected_point(), clicked);
-				setSelected_point(new Point(-1, -1));
-			} else if(reply == JOptionPane.NO_OPTION) {
-				gameBoard.placePieceInside(getSelected_point(), clicked);
-				setSelected_point(new Point(-1, -1));
-			}
-		    } else {
-                        gameBoard.placePieceInside(getSelected_point(), clicked);
-			setSelected_point(new Point(-1, -1));
-		    }
+			            Object[] options = {"はい", "いいえ", "キャンセル"};
+			            int reply = JOptionPane.showOptionDialog(null, "成りますか？", "成駒", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
+                        if(reply == JOptionPane.YES_OPTION) {
+				            gameBoard.replacePieceWithPromote(getSelected_point(), clicked_on_board);
+				            setSelected_point(new Point(-1, -1));
+			            } else if(reply == JOptionPane.NO_OPTION) {
+				            gameBoard.replacePiece(getSelected_point(), clicked_on_board);
+				            setSelected_point(new Point(-1, -1));
+			            } else {
+                            setSelected_point(new Point(-1, -1));
+                        }
+		            } else {
+                        gameBoard.replacePiece(getSelected_point(), clicked_on_board);
+			            setSelected_point(new Point(-1, -1));
+		            }
                 } else {
-                    setSelected_point(clicked);
-		}
+                    setSelected_point(clicked_on_board);
+		        }
             } else {
-                setSelected_point(clicked);
+                setSelected_point(clicked_on_board);
             }
         }  else if (!onBoard) {
             // 持ち駒の処理
         	if (haveSelectedInHand) {
         		// 選択解除
-        		selected_pieces_inHand = new EmptyPiece();
+        		selected_piece_in_hand = new EmptyPiece();
         	} else {
-                boolean onWhiteBoard_of[];
-                onWhiteBoard_of = getJudgementsOfPieceInHand(selecting, WHITES_OFFSET);
-                boolean onBlackBoard_of[];
-                onBlackBoard_of = getJudgementsOfPieceInHand(selecting, BLACKS_OFFSET);
-                ArrayList<Piece> whites_list = gameBoard.getPieces_inHand_of_white();
-                ArrayList<Piece> blacks_list = gameBoard.getPieces_inHand_of_black();
+                int type_of_selected_in_hand;
+                if (gameBoard.getAttacker() instanceof AheadPlayer)
+                    type_of_selected_in_hand = getTypeOfPieceInHand(clicked, AHEAD_OFFSET);
+                else
+                    type_of_selected_in_hand = getTypeOfPieceInHand(clicked, BEHIND_OFFSET);
                 boolean couldSelect = false;
-                for(int type = 1; type < 8; type++) {
-                    if (onWhiteBoard_of[type-1]) {
-                        couldSelect = setSelected_pieces_inHand(whites_list, type);
-                    }
-                    if (onBlackBoard_of[type-1]) {
-                        couldSelect = setSelected_pieces_inHand(blacks_list, type);
-                    }
-                    if (couldSelect) {
+                for (Piece piece : gameBoard.getAttacker().getPiecesInHand()) {
+                    if(piece.getTypeOfPiece() == type_of_selected_in_hand) {
+                        couldSelect = true;
+                        setSelected_piece_in_hand(piece);
                         break;
-                    } else {
-                        selected_pieces_inHand = new EmptyPiece();
                     }
                 }
+                if(!couldSelect) selected_piece_in_hand = new EmptyPiece();
         	}
             setSelected_point(new Point(-1, -1));
         }
         // TODO: clear print 4 debug.
         System.out.println(selected_point);
         repaint();
-    }
-    // もし，セレクトできれば，trueを返す．
-    public boolean setSelected_pieces_inHand(ArrayList<Piece> list, final int TYPE) {
-        boolean couldSelected = false;
-        for (Piece piece : list) {
-            if (piece.getTypeOfPiece() == TYPE) {
-                setSelected_pieces_inHand(piece);
-                // TODO: clear print 4 debug.
-                System.out.println("IN HAND, SELECTED PIECE'S TYPE IS " + TYPE);
-                couldSelected = true;
-                break;
-            }
-        }
-        return couldSelected;
     }
     public String pad(int n) {
         if (n < 10) return "0" + n;
@@ -160,71 +134,65 @@ public class ShogiBoardComponent extends JComponent{
         Graphics2D g2 = (Graphics2D) g;
         // 将棋盤をoffShogi_imgにdraw.
         offShogi_Img.drawImage(ShogiBoard_Img, 0, 0, 802, 500, this);
-        paintPiecesOnBoard(g2);
-        ArrayList<Piece> blacks_list = gameBoard.getPieces_inHand_of_black();
-        ArrayList<Piece> whites_list = gameBoard.getPieces_inHand_of_white();
+        paintPiecesOnBoard(g2, gameBoard.getAttacker());
+        paintPiecesOnBoard(g2, gameBoard.getDefender());
         // offShogi_imgにdrawする.
-        paintPiecesInHand(g2, blacks_list, BLACKS_OFFSET);
-        paintPiecesInHand(g2, whites_list, WHITES_OFFSET);
+        paintPiecesInHand(g2, gameBoard.getAttacker());
+        paintPiecesInHand(g2, gameBoard.getDefender());
         // 選択中のマス目が将棋盤のマス目であれば
-        if(selected_point.x != -1){
+        if(selected_point.x != -1 && gameBoard.getAttacker().getPieceTypeOnBoardAt(selected_point) > 0){
         	paintHighlightsOnBoard(g);
         }
         // 持ち駒であれば
-        else if(selected_pieces_inHand.getTypeOfPiece() != Piece.NONE){
+        else if(gameBoard.getAttacker().matchTypeInHand(selected_piece_in_hand)){
         	paintHighlightsOfTableOfPiecesInHand(g);
         }
         g2.drawImage(Shogi_Img, 0, 0, 802, 500, this);
         g2.dispose();
     }
-    private void paintPiecesOnBoard(Graphics g) {
-        for(int y = 0; y < 9; y++) for(int x = 0; x < 9; x++) {
-            Piece that  = gameBoard.getPieceOf(new Point(x, y));
-            int type = that.getTypeOfPiece();
-            if(type > 0){
-                 offShogi_Img.drawImage(
-                        Pieces_Img[that.isBlack()?BLACK:WHITE][type-1],
-                        OFFSET.x + GRID *x + OFFSET_OF_GRID.x,
-                        OFFSET.y + GRID *y + OFFSET_OF_GRID.y,
-                        45, 48, this
-                );
-            }
-        } // double for
+    private void paintPiecesOnBoard(Graphics g, Player player) {
+        for(Piece p : player.getPiecesOnBoard()) {
+            offShogi_Img.drawImage(
+                    Pieces_Img[player instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND][p.getTypeOfPiece() - 1],
+                    OFFSET.x + GRID * p.getPoint().x + OFFSET_OF_GRID.x,
+                    OFFSET.y + GRID * p.getPoint().y + OFFSET_OF_GRID.y,
+                    45, 48, this
+            );
+        }
     }
-    private void paintPiecesInHand(Graphics g, ArrayList<Piece> list, Point offset) {
+    private void paintPiecesInHand(Graphics g, Player player) {
+        int player_type = player instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND;
+        Point offset = player_type == Player.AHEAD ? AHEAD_OFFSET : BEHIND_OFFSET;
         int count_of[] = new int[7];
-        int alternative  = 0;
-        for(Iterator ite = list.iterator(); ite.hasNext();) {
-            Piece piece_inHand = (Piece) ite.next();
-            alternative = piece_inHand.isBlack() ? BLACK : WHITE;
+        for(Piece p : player.getPiecesInHand()) {
             int x = 0, y = 0;
-            if(piece_inHand.getTypeOfPiece() == Piece.FU) {
+            if(p.getTypeOfPiece() == Piece.FU) {
                 count_of[Piece.FU - 1]++;
             }
             for(int i = 2; i < 8; i+=2 ) {
-                if(piece_inHand.getTypeOfPiece() == i) {
+                if(p.getTypeOfPiece() == i) {
                     x = count_of[i-1] * 5;
                     y = 25 * i;
                     count_of[i-1]++;
                 }
-                if(piece_inHand.getTypeOfPiece() == i+1) {
+                if(p.getTypeOfPiece() == i+1) {
                     x = 60 + count_of[i] * 5;
                     y = 25 * i;
                     count_of[i]++;
                 }
             }
             offShogi_Img.drawImage(
-                    Pieces_Img[alternative][piece_inHand.getTypeOfPiece() - 1],
+                    Pieces_Img[player_type][p.getTypeOfPiece() - 1],
                     offset.x + x,
                     offset.y + y,
                     45, 48, this
             );
         }
-        for(int i = 0; i < count_of[Piece.FU -1]; i++) {
+        for(int count = 1; count < count_of[Piece.FU -1]; count++) {
             int width = (count_of[Piece.FU-1] < 8)?15:5;
             offShogi_Img.drawImage(
-                    Pieces_Img[alternative][Piece.FU - 1],
-                    offset.x + i * width,
+                    Pieces_Img[player_type][Piece.FU - 1],
+                    offset.x + count * width,
                     offset.y,
                     45, 48, this
             );
@@ -237,70 +205,32 @@ public class ShogiBoardComponent extends JComponent{
      */
     private void paintHighlightsOfTableOfPiecesInHand(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        Piece that = selected_pieces_inHand;
-        int type = that.getTypeOfPiece();
-        if(type > 0 && ((that.isBlack()) && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn())) {
+        Piece sel = selected_piece_in_hand;
 
-            // TODO: 持ち駒自身のhighlightがまだ
-        	/*
-            Rectangle rect = new Rectangle(
-                    OFFSET.x + GRID * selected_point.x,
-                    OFFSET.y + GRID * selected_point.y,
-                    48,
-                    48
-            );
-            // 選択した駒のhighlight.
-            offShogi_Img.setColor(new Color(255, 0, 0, 90));
-            offShogi_Img.setStroke(new BasicStroke(5.0f));
-            offShogi_Img.draw(rect);
-            */
+        // TODO: 持ち駒自身のhighlightがまだ
+        /*
+        Rectangle rect = new Rectangle(
+                OFFSET.x + GRID * selected_point.x,
+                OFFSET.y + GRID * selected_point.y,
+                48,
+                48
+        );
+        // 選択した駒のhighlight.
+        offShogi_Img.setColor(new Color(255, 0, 0, 90));
+        offShogi_Img.setStroke(new BasicStroke(5.0f));
+        offShogi_Img.draw(rect);
+        */
 
-            // 選択した駒からおける場所へのhighlight.
-            for(int x = 0; x < 9; x++) {
-            	if(gameBoard.selected_will_be_niFu(that, x)){
-            		continue;
-            	}
-            	for(int y = 0; y < 9; y++) {
-            		if (gameBoard.getPieceOf(x, y).getTypeOfPiece() != Piece.NONE){
-            			continue;
-            		}
-            		Point p = new Point(x, y);
-            		Rectangle capable_rect = new Rectangle(
-            				OFFSET.x + GRID * p.x,
-            				OFFSET.y + GRID * p.y,
-                            48,
-                            48
-            		);
-                    offShogi_Img.setColor(new Color(0, 255, 0, 80));
-                    offShogi_Img.draw(capable_rect);
-            	}
+        // 選択した駒からおける場所へのhighlight.
+        for(int x = 0; x < 9; x++) {
+            if(gameBoard.selected_will_be_niFu(sel, x)){
+                continue;
             }
-        }
-    }
-
-    /**
-     * 将棋盤上で選択した駒，おける位置をHighlightする.
-     * @param g Graphics
-     */
-    private void paintHighlightsOnBoard(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        Piece that = gameBoard.getPieceOf(selected_point.x, selected_point.y);
-        int type = that.getTypeOfPiece();
-        if(type > 0 && ((that.isBlack()) && gameBoard.isBlacksTurn() || that.isWhite() && !gameBoard.isBlacksTurn())) {
-            Rectangle rect = new Rectangle(
-                    OFFSET.x + GRID * selected_point.x,
-                    OFFSET.y + GRID * selected_point.y,
-                    48,
-                    48
-            );
-            // 選択した駒のhighlight.
-            offShogi_Img.setColor(new Color(255, 0, 0, 90));
-            offShogi_Img.setStroke(new BasicStroke(5.0f));
-            offShogi_Img.draw(rect);
-            // 選択した駒からおける場所へのhighlight.
-            Iterator itr = that.getCapableMovePiece(gameBoard, selected_point).iterator();
-            for(;itr.hasNext();) {
-                Point p = (Point)itr.next();
+            for(int y = 0; y < 9; y++) {
+                if (gameBoard.isTherePieceAt(new Point(x, y))){
+                    continue;
+                }
+                Point p = new Point(x, y);
                 Rectangle capable_rect = new Rectangle(
                         OFFSET.x + GRID * p.x,
                         OFFSET.y + GRID * p.y,
@@ -311,7 +241,38 @@ public class ShogiBoardComponent extends JComponent{
                 offShogi_Img.draw(capable_rect);
             }
         }
-        // 持ち駒からおける場所のhighlight.
+    }
+
+    /**
+     * 将棋盤上で選択した駒，おける位置をHighlightする.
+     * @param g Graphics
+     */
+    private void paintHighlightsOnBoard(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        Piece sel = gameBoard.getPieceOf(selected_point.x, selected_point.y);
+        Rectangle rect = new Rectangle(
+                OFFSET.x + GRID * selected_point.x,
+                OFFSET.y + GRID * selected_point.y,
+                48,
+                48
+        );
+        // 選択した駒のhighlight.
+        offShogi_Img.setColor(new Color(255, 0, 0, 90));
+        offShogi_Img.setStroke(new BasicStroke(5.0f));
+        offShogi_Img.draw(rect);
+        // 選択した駒からおける場所へのhighlight.
+        Iterator itr = sel.getCapablePutPoint(gameBoard.getAttacker(), gameBoard.getDefender()).iterator();
+        for(;itr.hasNext();) {
+            Point p = (Point)itr.next();
+            Rectangle capable_rect = new Rectangle(
+                    OFFSET.x + GRID * p.x,
+                    OFFSET.y + GRID * p.y,
+                    48,
+                    48
+            );
+            offShogi_Img.setColor(new Color(0, 255, 0, 80));
+            offShogi_Img.draw(capable_rect);
+        }
     }
     private void loadImages() {
         Shogi_Img = new BufferedImage(802, 500, BufferedImage.TYPE_3BYTE_BGR);
@@ -332,16 +293,16 @@ public class ShogiBoardComponent extends JComponent{
             for(int i = 0; i < 14; i++) {
                 String filename_of[] = new String[2];
                 if(i < 10) {
-                    filename_of[BLACK] = new String().format("%s/pieces/B%s.png",img_path , pad(i+1) );
-                    filename_of[WHITE] = new String().format("%s/pieces/W%s.png",img_path , pad(i+1) );
+                    filename_of[Player.AHEAD] = new String().format("%s/pieces/B%s.png",img_path , pad(i+1) );
+                    filename_of[Player.BEHIND] = new String().format("%s/pieces/W%s.png",img_path , pad(i+1) );
                 } else {
-                    filename_of[BLACK] = new String().format("%s/pieces/B11_%s.png",img_path , pad(i-10+1));
-                    filename_of[WHITE] = new String().format("%s/pieces/W11_%s.png",img_path,  pad(i-10+1));
+                    filename_of[Player.AHEAD] = new String().format("%s/pieces/B11_%s.png",img_path , pad(i-10+1));
+                    filename_of[Player.BEHIND] = new String().format("%s/pieces/W11_%s.png",img_path,  pad(i-10+1));
                 }
                 //TODO: delete print 4 debug
-                System.out.println(filename_of[WHITE] + " " + filename_of[BLACK]);
-                Pieces_Img[BLACK][i] = ImageIO.read(new File(filename_of[BLACK]));
-                Pieces_Img[WHITE][i] = ImageIO.read(new File(filename_of[WHITE]));
+                System.out.println(filename_of[Player.BEHIND] + " " + filename_of[Player.AHEAD]);
+                Pieces_Img[Player.AHEAD][i] = ImageIO.read(new File(filename_of[Player.AHEAD]));
+                Pieces_Img[Player.BEHIND][i] = ImageIO.read(new File(filename_of[Player.BEHIND]));
             }
         } catch(IOException e) {
             //TODO: delete print 4 debug
@@ -363,10 +324,10 @@ public class ShogiBoardComponent extends JComponent{
     public GameBoard getGameBoard() {
         return gameBoard;
     }
-    public void setSelected_pieces_inHand(Piece selected_pieces_inHand) {
-        this.selected_pieces_inHand = selected_pieces_inHand;
+    public void setSelected_piece_in_hand(Piece selected_piece_in_hand) {
+        this.selected_piece_in_hand = selected_piece_in_hand;
     }
-    public Piece getSelected_pieces_inHand() {
-        return selected_pieces_inHand;
+    public Piece getSelected_piece_in_hand() {
+        return selected_piece_in_hand;
     }
 }

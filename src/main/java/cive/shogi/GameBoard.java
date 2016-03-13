@@ -11,56 +11,34 @@ import java.awt.*;
 import java.util.*;
 
 public class GameBoard {
-    private Piece board_Arr[][] = new Piece[9][9];
-    private boolean turn = true;
+    private Player attacker;
+    private Player defender;
+    private Player playerA;
+    private Player playerB;
     public GameBoard() {
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
-                board_Arr[i][j] = new EmptyPiece();
-            }
-        }
         initGame();
-        // TODO: delete debug
-        for(int x = 0; x < 9; x++) {
-            for(int y = 0; y < 9; y++) {
-                System.out.print(board_Arr[x][y].getName());
-            }
-            System.out.println();
-        }
-        for(int x = 0; x < 9; x++) {
-            for(int y = 0; y < 9; y++) {
-                System.out.print(board_Arr[x][y].isBlack()?"黒":"白");
-            }
-            System.out.println();
-        }
+        //printBoard();
     }
-    private void initGame() {
+    public GameBoard(int rule) {
+        initGame(rule);
+        //printBoard();
+    }
+    public Boolean isAheadsTurn() {
+        return attacker instanceof AheadPlayer;
+    }
+    public void initGame() {
+        playerA = new AheadPlayer();
+        playerB = new BehindPlayer();
         setTurn(true);
-        board_Arr = new Piece[][]{
-                {new KyoshaOfPiece(), new KeimaOfPiece(), new GinOfPiece(), new KinOfPiece(), new GyokuOfPiece(), new KinOfPiece(), new GinOfPiece(), new KeimaOfPiece(), new KyoshaOfPiece() },
-                {new EmptyPiece(), new HishaOfPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new KakuOfPiece(), new EmptyPiece() },
-                {new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece() },
-                {new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece() },
-                {new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece() },
-                {new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece() },
-                {new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece(), new FuOfPiece() },
-                {new EmptyPiece(), new KakuOfPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new EmptyPiece(), new HishaOfPiece(), new EmptyPiece() },
-                {new KyoshaOfPiece(), new KeimaOfPiece(), new GinOfPiece(), new KinOfPiece(), new GyokuOfPiece(), new KinOfPiece(), new GinOfPiece(), new KeimaOfPiece(), new KyoshaOfPiece() }
-        };
-        for(int i = 0; i < 9; i++) {
-            board_Arr[8][i].setTurn(true);
-            board_Arr[6][i].setTurn(true);
-        }
-        board_Arr[7][1].setTurn(true);
-        board_Arr[7][7].setTurn(true);
-        // isBlack && getTypeOfPiece > 0 : exist.
     }
-    public void setBoard_Arr(Piece piece, Point p) {
-        if(this.isInGrid(p))board_Arr[p.y][p.x] = piece;
+    public void initGame(int rule) {
+        playerA = new AheadPlayer(rule);
+        playerB = new BehindPlayer();
+        setTurn(true);
     }
     public Piece getPieceOf(Point p) {
-        if(this.isInGrid(p))return board_Arr[p.y][p.x];
-        else return new EmptyPiece();
+        if(this.isInGrid(p))return attacker.getPieceOnBoardAt(p);
+        else return new EmptyPiece(new Point(-1,-1));
     }
     public Piece getPieceOf(int x, int y) {
         return this.getPieceOf(new Point(x, y));
@@ -70,95 +48,100 @@ public class GameBoard {
                 && point.y >= 0 && point.y < 9) return true;
         else return false;
     }
-    public boolean isBlacksTurn() {
-        return turn;
-    }
-    public void setTurn(boolean turn) {
-        this.turn = turn;
+    public void setTurn(boolean aheadsTurn) {
+        if(aheadsTurn) {
+            this.attacker = playerA;
+            this.defender = playerB;
+        } else {
+            this.attacker = playerB;
+            this.defender = playerA;
+        }
     }
     public void nextTurn() {
-        this.turn = !turn;
-    }
-
-    public boolean canPlaceInside(Point move_before, Point move_after) {
-        Piece that = this.getPieceOf(move_before.x, move_before.y);
-        Iterator itr = that.getCapableMovePiece(this, move_before).iterator();
-        for (; itr.hasNext(); ) {
-            Point capable_move_point = (Point) itr.next();
-            boolean canMove = move_after.x == capable_move_point.x && move_after.y == capable_move_point.y;
-            if (canMove) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void placePieceInside(Point move_before, Point move_after) {
-        Piece before = this.getPieceOf(move_before.x, move_before.y);
-        Piece after = this.getPieceOf(move_after.x, move_after.y);
-        if(after.getTypeOfPiece() > 0) {
-            this.addEachPieceInHand(after);
-        }
-        this.setBoard_Arr(before, move_after);
-        this.setBoard_Arr(new EmptyPiece(), move_before);
-        this.nextTurn();
-    }
-
-    private ArrayList<Piece> piece_inHand_of_black = new ArrayList<>();
-    private ArrayList<Piece> piece_inHand_of_white = new ArrayList<>();
-    public void addEachPieceInHand(Piece others) {
-	Piece p;
-	switch(others.getPre_typeOfPiece()) {
-	    case Piece.FU:
-                p = new FuOfPiece();
-	        break;
-	    case Piece.KYOSHA:
-                p = new KyoshaOfPiece();
-	        break;
-	    case Piece.KEIMA:
-	        p = new KeimaOfPiece();
-	        break;
-       	    case Piece.GIN:
-	        p = new GinOfPiece();
-	        break;
-            case Piece.KAKU:
-       	        p = new KakuOfPiece();
-	        break;
-	    case Piece.HISHA:
-	        p = new HishaOfPiece();
-	        break;
-	    default:
-	        p = others;
-	}
-        if(others.isBlack()) {
-	    p.setTurn(false);
-            piece_inHand_of_white.add(p);
+        System.out.println("attOnBoa: " + attacker.getPiecesOnBoard());
+        System.out.println("attInHan: " + attacker.getPiecesInHand());
+        System.out.println("defOnBoa: " + defender.getPiecesOnBoard());
+        System.out.println("defInHan: " + defender.getPiecesInHand());
+        if(this.attacker instanceof BehindPlayer) {
+            this.attacker = playerA;
+            this.defender = playerB;
         } else {
-	    p.setTurn(true);
-            piece_inHand_of_black.add(p);
+            this.attacker = playerB;
+            this.defender = playerA;
         }
     }
-    public void placePieceInHand(Piece piece, Point pos){
+    public Player getAttacker() {
+        return attacker;
+    }
+    public Player getDefender() {
+        return defender;
+    }
+    public boolean canPlaceInside(Point src, Point dst) {
+        Piece p = attacker.getPieceOnBoardAt(src);
+        if (p.getTypeOfPiece() == Piece.NONE) return false;
+        Set<Point> s = p.getCapablePutPoint(attacker, defender);
+        if (s.size() == 0) return false;
+        return s.contains(dst);
+    }
+    public boolean isTherePieceAt(Point p) {
+        return attacker.getPieceTypeOnBoardAt(p) + defender.getPieceTypeOnBoardAt(p) > 0;
+    }
+    public void placePieceInHand(Piece piece, Point dst){
     	// 持ち駒を置けるなら置いて，交代
-    	if(!selected_will_be_niFu(piece, pos.x) && getPieceOf(pos.x, pos.y).getTypeOfPiece() == Piece.NONE){
+    	if(wouldMoveNextLater(piece,dst) && !selected_will_be_niFu(piece, dst.x) && !isTherePieceAt(dst)){
+            attacker.reducePieceInHandThatIs(piece);
     		// 持ち駒を置く
-    		setBoard_Arr(piece, pos);
+            piece.setPoint(dst);
+            attacker.addPiecesOnBoard(piece);
 
-    		// 置いた持ち駒を減らす
-	        Iterator<Piece> ite;
-    		if(piece.isBlack()){
-    			ite = piece_inHand_of_black.iterator();
-    		}else{
-    			ite = piece_inHand_of_white.iterator();
-    		}
-	        while(ite.hasNext()){
-	            if(ite.next().getTypeOfPiece() == piece.getTypeOfPiece()){
-	            	ite.remove();
-	            	break;
-	            }
-	        }
-    		nextTurn();
+    		this.nextTurn();
     	}
+    }
+
+    public void replacePiece(Point src, Point dst) {
+        Piece src_piece = null;
+        Piece dst_piece = null;
+        try {
+            src_piece = attacker.getPieceOnBoardAt(src).clone();
+            attacker.reducePieceOnBoardAt(src);
+            src_piece.setPoint(dst);
+            if(defender.getPieceTypeOnBoardAt(dst) > 0) {
+                dst_piece = defender.getPieceOnBoardAt(dst).clone();
+                defender.reducePieceOnBoardAt(dst);
+                dst_piece.setPoint(new Point(-1,-1));
+                if(dst_piece.getPre_typeOfPiece() > 0)
+                    attacker.addPiecesInHand(dst_piece.getDemotePiece());
+                else
+                    attacker.addPiecesInHand(dst_piece);
+            }
+            attacker.addPiecesOnBoard(src_piece);
+            this.nextTurn();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void replacePieceWithPromote(Point src, Point dst) {
+        Piece src_piece = null;
+        Piece dst_piece = null;
+        try {
+            src_piece = attacker.getPieceOnBoardAt(src).clone();
+            attacker.reducePieceOnBoardAt(src);
+            src_piece.setPoint(dst);
+            if(defender.getPieceTypeOnBoardAt(dst) > 0) {
+                dst_piece = defender.getPieceOnBoardAt(dst).clone();
+                defender.reducePieceOnBoardAt(dst);
+                dst_piece.setPoint(new Point(-1,-1));
+                if(dst_piece.getPre_typeOfPiece() > 0)
+                    attacker.addPiecesInHand(dst_piece.getDemotePiece());
+                else
+                    attacker.addPiecesInHand(dst_piece);
+            }
+            attacker.addPiecesOnBoard(src_piece.getPromotePiece());
+            this.nextTurn();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
     }
 
     // 与えられた位置が含まれる列に，既に歩があればtrue
@@ -167,9 +150,9 @@ public class GameBoard {
     	// 置こうとしている駒が歩であるか
     	if(selected_piece.getTypeOfPiece() == Piece.FU){
     		for(int y = 0; y < 9; y++){
-        		Piece piece = getPieceOf(x, y);
+        		Piece piece = attacker.getPieceOnBoardAt(new Point(x, y));
         		// 自分の駒でかつそれが歩であれば
-        		if(!(this.isBlacksTurn() ^ piece.isBlack() ) && piece.getTypeOfPiece() == Piece.FU){
+        		if(piece.getTypeOfPiece() == Piece.FU){
         			ret = true;
         			break;
         		}
@@ -177,37 +160,27 @@ public class GameBoard {
     	}
     	return ret;
     }
-    public boolean canPromote(Point p) {
-	boolean bPromote = 0 <= p.y && p.y <= 2;
-	boolean wPromote = 6 <= p.y && p.y <= 8;
-	Piece piece = this.getPieceOf(p);
-	int type = piece.getTypeOfPiece();
-	boolean canPromoteForType = (type >= Piece.FU && type <= Piece.GIN) || type == Piece.KAKU || type == Piece.HISHA;
-	if(this.isBlacksTurn() && bPromote && canPromoteForType) {
-		return true;
-	} else if(!this.isBlacksTurn() && wPromote && canPromoteForType) {
-		return true;
-	}
-	return false;
-    }
-    public boolean canPromote(Point p, Point mine) {
-	boolean bPromote = 0 <= p.y && p.y <= 2;
-	boolean wPromote = 6 <= p.y && p.y <= 8;
-	Piece piece = this.getPieceOf(mine);
-	int type = piece.getTypeOfPiece();
-	boolean canPromoteForType = (type >= Piece.FU && type <= Piece.GIN) || type == Piece.KAKU || type == Piece.HISHA;
-	if(this.isBlacksTurn() && bPromote && canPromoteForType) {
-	    return true;
-	} else if (!this.isBlacksTurn() && wPromote && canPromoteForType) {
-	    return true;
-	}
-	return false;
+    // 与えられた位置が動かせる位置ならtrue
+    public Boolean wouldMoveNextLater(Piece selected_piece, Point dst) {
+        Piece p = null;
+        try {
+            p = selected_piece.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        p.setPoint(dst);
+        return selected_piece.getCapablePutPoint(attacker, defender).size() > 0;
     }
 
-    public ArrayList<Piece> getPieces_inHand_of_black() {
-        return piece_inHand_of_black;
-    }
-    public ArrayList<Piece> getPieces_inHand_of_white() {
-        return piece_inHand_of_white;
+    public void printBoard() {
+        for(int y = 0; y < 9; y++) {
+            for(int x = 0; x < 9; x++) {
+                Player player;
+                if (attacker.getPieceTypeOnBoardAt(new Point(x, y)) > 0) player = attacker;
+                else player = defender;
+                System.out.print(player.getPieceOnBoardAt(new Point(x,y)).getName());
+            }
+            System.out.println();
+        }
     }
 }

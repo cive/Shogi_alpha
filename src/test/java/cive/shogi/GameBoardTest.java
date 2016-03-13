@@ -34,16 +34,48 @@ public class GameBoardTest {
     @Test
     public void 盤上で駒を移動できるかを判定する() {
         GameBoard gameBoard = new GameBoard();
+        assertTrue(gameBoard.getAttacker().getPieceOnBoardAt(new Point(6,6)).getCapablePutPoint(
+                gameBoard.getAttacker(), gameBoard.getDefender()
+        ).size() > 0);
         assertTrue(gameBoard.canPlaceInside(new Point(6,6), new Point(6,5)));
         assertFalse(gameBoard.canPlaceInside(new Point(7,1), new Point(6,2)));
+        assertFalse(gameBoard.canPlaceInside(new Point(7,7), new Point(7,5)));
+        assertFalse(gameBoard.canPlaceInside(new Point(1,7), new Point(3,5)));
+        gameBoard.replacePiece(new Point(6,6), new Point(6,5));
+        assertTrue(gameBoard.canPlaceInside(new Point(2,0), new Point(3,1)));
+    }
+
+    @Test
+    public void 盤上で駒を移動する() {
+        GameBoard gameBoard = new GameBoard();
+        assertTrue(gameBoard.getAttacker().getPieceOnBoardAt(new Point(6,6)).getCapablePutPoint(
+                gameBoard.getAttacker(), gameBoard.getDefender()
+        ).size() > 0);
+        assertTrue(gameBoard.canPlaceInside(new Point(6,6), new Point(6,5)));
+        gameBoard.replacePiece(new Point(6,6), new Point(6,5));
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6,5)) > 0);
     }
 
     @Test
     public void nextTurnで手番を変える() {
         GameBoard gameBoard = new GameBoard();
-        assertTrue(gameBoard.isBlacksTurn());
+        assertTrue(gameBoard.isAheadsTurn());
         gameBoard.nextTurn();
-        assertFalse(gameBoard.isBlacksTurn());
+        assertFalse(gameBoard.isAheadsTurn());
     }
 
+    @Test
+    public void 成駒できるか() {
+        GameBoard gameBoard = new GameBoard(0);
+        assertTrue(gameBoard.getAttacker().getPieceOnBoardAt(new Point(7,7)).canPromote(new Point(7,2), gameBoard.isAheadsTurn()));
+        gameBoard.replacePieceWithPromote(new Point(7,7), new Point(7,2));
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(7,2)) == Piece.RYU);
+    }
+
+    @Test
+    public void 駒を入手できるか() {
+        GameBoard gameBoard = new GameBoard(0);
+        gameBoard.replacePieceWithPromote(new Point(7,7), new Point(7,2));
+        assertTrue(gameBoard.getDefender().getPiecesInHand().get(0).getTypeOfPiece() == Piece.FU);
+    }
 }

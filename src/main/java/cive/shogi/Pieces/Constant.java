@@ -1,6 +1,6 @@
 package cive.shogi.Pieces;
 
-interface ConstantOfPiece {
+interface Constant {
     static final int NONE = 0;
     static final int FU = 1;
     static final int KYOSHA = 2;

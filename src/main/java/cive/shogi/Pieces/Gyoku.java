@@ -4,7 +4,11 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GyokuOfPiece extends Piece {
+public class Gyoku extends Piece {
+
+    public Gyoku(Point p) {
+        super(p);
+    }
 
     @Override
     public String getName() {
@@ -12,7 +16,7 @@ public class GyokuOfPiece extends Piece {
     }
 
     @Override
-    public Set<Point> getRuleOfPiece() {
+    public Set<Point> getRuleOfPiece(int player_type) {
         Set<Point> set = new HashSet<Point>();
         for(int i = -1; i < 2; i++) {
             for(int j = -1; j < 2; j++) {
