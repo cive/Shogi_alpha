@@ -5,25 +5,51 @@ import cive.shogi.Pieces.*;
 
 /**
  * Created by yotuba on 16/03/12.
+ * behind player (後手)
  */
 public class BehindPlayer extends Player {
+    private PieceFactory factory = new PieceFactory();
     public BehindPlayer() {
-        this.setInitial();
+        setDefault();
+    }
+    public BehindPlayer(int rule) {
+        setInitial(rule);
     }
     @Override
-    void setInitial(){
+    protected void setFu() {
         for (int x = 0; x < 9; x++)
-            this.addPiecesOnBoard(new Fu(new Point(x, 2)));
-        this.addPiecesOnBoard(new Kaku(new Point(7, 1)));
-        this.addPiecesOnBoard(new Hisha(new Point(1, 1)));
-        this.addPiecesOnBoard(new Gyoku(new Point(4, 0)));
-        this.addPiecesOnBoard(new Kin(new Point(3, 0)));
-        this.addPiecesOnBoard(new Kin(new Point(5, 0)));
-        this.addPiecesOnBoard(new Gin(new Point(2, 0)));
-        this.addPiecesOnBoard(new Gin(new Point(6, 0)));
-        this.addPiecesOnBoard(new Keima(new Point(1, 0)));
-        this.addPiecesOnBoard(new Keima(new Point(7, 0)));
-        this.addPiecesOnBoard(new Kyosha(new Point(0, 0)));
-        this.addPiecesOnBoard(new Kyosha(new Point(8, 0)));
+            this.addPiecesOnBoard(factory.create(Piece.FU, new Point(x, 2)));
+    }
+    @Override
+    protected void setKaku() {
+        this.addPiecesOnBoard(factory.create(Piece.KAKU, new Point(7, 1)));
+    }
+    @Override
+    protected void setHisha() {
+        this.addPiecesOnBoard(factory.create(Piece.HISHA, new Point(1, 1)));
+    }
+    @Override
+    protected void setKin() {
+        this.addPiecesOnBoard(factory.create(Piece.KIN, new Point(3, 0)));
+        this.addPiecesOnBoard(factory.create(Piece.KIN, new Point(5, 0)));
+    }
+    @Override
+    protected void setGin() {
+        this.addPiecesOnBoard(factory.create(Piece.GIN, new Point(2, 0)));
+        this.addPiecesOnBoard(factory.create(Piece.GIN, new Point(6, 0)));
+    }
+    @Override
+    protected void setKeima() {
+        this.addPiecesOnBoard(factory.create(Piece.KEIMA, new Point(1, 0)));
+        this.addPiecesOnBoard(factory.create(Piece.KEIMA, new Point(7, 0)));
+    }
+    @Override
+    protected void setKyosha() {
+        this.addPiecesOnBoard(factory.create(Piece.KYOSHA, new Point(0, 0)));
+        this.addPiecesOnBoard(factory.create(Piece.KYOSHA, new Point(8, 0)));
+    }
+    @Override
+    protected void setGyoku() {
+        this.addPiecesOnBoard(factory.create(Piece.GYOKU, new Point(4, 0)));
     }
 }

@@ -6,69 +6,52 @@ import java.awt.*;
 
 /**
  * Created by yotuba on 16/03/12.
+ * ahead player (先手)
  */
 public class AheadPlayer extends Player {
-    static final int FU_OCHI = 0;
-    static final int HISHA_KAKU_OCHI = 1;
-    public AheadPlayer() {
-        this.setInitial();
-    }
+    private PieceFactory factory = new PieceFactory();
     // for test
+    public AheadPlayer() {
+        setDefault();
+    }
     public AheadPlayer(int rule) {
-        if(rule == FU_OCHI) {
-            setKaku();
-            setHisha();
-            setGin();
-            setKin();
-            setKeima();
-            setKyosha();
-            this.addPiecesOnBoard(new Gyoku(new Point(4, 8)));
-        } else if (rule == HISHA_KAKU_OCHI) {
-            setFu();
-            setGin();
-            setKin();
-            setKeima();
-            setKyosha();
-            this.addPiecesOnBoard(new Gyoku(new Point(4, 8)));
-        } else {
-            setInitial();
-        }
+        setInitial(rule);
     }
     @Override
-    void setInitial(){
-        setFu();
-        setKaku();
-        setHisha();
-        setGin();
-        setKin();
-        setKeima();
-        setKyosha();
-        this.addPiecesOnBoard(new Gyoku(new Point(4, 8)));
-    }
-    void setFu() {
+    protected void setFu() {
         for (int x = 0; x < 9; x++)
-            this.addPiecesOnBoard(new Fu(new Point(x, 6)));
+            this.addPiecesOnBoard(factory.create(Piece.FU, new Point(x, 6)));
     }
-    void setKaku() {
-        this.addPiecesOnBoard(new Kaku(new Point(1, 7)));
+    @Override
+    protected void setKaku() {
+        this.addPiecesOnBoard(factory.create(Piece.KAKU, new Point(1,7)));
     }
-    void setHisha() {
-        this.addPiecesOnBoard(new Hisha(new Point(7, 7)));
+    @Override
+    protected void setHisha() {
+        this.addPiecesOnBoard(factory.create(Piece.HISHA, new Point(7, 7)));
     }
-    void setKin() {
-        this.addPiecesOnBoard(new Kin(new Point(3, 8)));
-        this.addPiecesOnBoard(new Kin(new Point(5, 8)));
+    @Override
+    protected void setKin() {
+        this.addPiecesOnBoard(factory.create(Piece.KIN, new Point(3, 8)));
+        this.addPiecesOnBoard(factory.create(Piece.KIN, new Point(5, 8)));
     }
-    void setGin() {
-        this.addPiecesOnBoard(new Gin(new Point(2, 8)));
-        this.addPiecesOnBoard(new Gin(new Point(6, 8)));
+    @Override
+    protected void setGin() {
+        this.addPiecesOnBoard(factory.create(Piece.GIN, new Point(2, 8)));
+        this.addPiecesOnBoard(factory.create(Piece.GIN, new Point(6, 8)));
     }
-    void setKeima() {
-        this.addPiecesOnBoard(new Keima(new Point(1, 8)));
-        this.addPiecesOnBoard(new Keima(new Point(7, 8)));
+    @Override
+    protected void setKeima() {
+        this.addPiecesOnBoard(factory.create(Piece.KEIMA, new Point(1, 8)));
+        this.addPiecesOnBoard(factory.create(Piece.KEIMA, new Point(7, 8)));
     }
-    void setKyosha() {
-        this.addPiecesOnBoard(new Kyosha(new Point(0, 8)));
-        this.addPiecesOnBoard(new Kyosha(new Point(8, 8)));
+    @Override
+    protected void setKyosha() {
+        this.addPiecesOnBoard(factory.create(Piece.KYOSHA, new Point(0, 8)));
+        this.addPiecesOnBoard(factory.create(Piece.KYOSHA, new Point(8, 8)));
+    }
+    @Override
+    protected void setGyoku() {
+        this.addPiecesOnBoard(factory.create(Piece.GYOKU, new Point(4, 8)));
     }
 }
