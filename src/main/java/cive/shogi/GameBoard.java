@@ -37,16 +37,15 @@ public class GameBoard {
         setTurn(true);
     }
     public Piece getPieceOf(Point p) {
-        if(this.isInGrid(p))return attacker.getPieceOnBoardAt(p);
+        if(GameBoard.isInGrid(p))return attacker.getPieceOnBoardAt(p);
         else return new EmptyPiece(new Point(-1,-1));
     }
     public Piece getPieceOf(int x, int y) {
         return this.getPieceOf(new Point(x, y));
     }
     public static boolean isInGrid(Point point) {
-        if(point.x >= 0 && point.x < 9
-                && point.y >= 0 && point.y < 9) return true;
-        else return false;
+        return point.x >= 0 && point.x < 9
+                && point.y >= 0 && point.y < 9;
     }
     public void setTurn(boolean aheadsTurn) {
         if(aheadsTurn) {
@@ -80,8 +79,7 @@ public class GameBoard {
         Piece p = attacker.getPieceOnBoardAt(src);
         if (p.getTypeOfPiece() == Piece.NONE) return false;
         Set<Point> s = p.getCapablePutPoint(attacker, defender);
-        if (s.size() == 0) return false;
-        return s.contains(dst);
+        return s.size() != 0 && s.contains(dst);
     }
     public boolean isTherePieceAt(Point p) {
         return attacker.getPieceTypeOnBoardAt(p) + defender.getPieceTypeOnBoardAt(p) > 0;
@@ -99,8 +97,8 @@ public class GameBoard {
     }
 
     public void replacePiece(Point src, Point dst) {
-        Piece src_piece = null;
-        Piece dst_piece = null;
+        Piece src_piece;
+        Piece dst_piece;
         try {
             src_piece = attacker.getPieceOnBoardAt(src).clone();
             attacker.reducePieceOnBoardAt(src);
@@ -122,8 +120,8 @@ public class GameBoard {
     }
 
     public void replacePieceWithPromote(Point src, Point dst) {
-        Piece src_piece = null;
-        Piece dst_piece = null;
+        Piece src_piece;
+        Piece dst_piece;
         try {
             src_piece = attacker.getPieceOnBoardAt(src).clone();
             attacker.reducePieceOnBoardAt(src);
@@ -168,8 +166,9 @@ public class GameBoard {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
+        if(p == null) return false;
         p.setPoint(dst);
-        return selected_piece.getCapablePutPoint(attacker, defender).size() > 0;
+        return p.getCapablePutPoint(attacker, defender).size() > 0;
     }
 
     public void printBoard() {
