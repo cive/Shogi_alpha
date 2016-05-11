@@ -22,7 +22,7 @@ public class Kyosha extends Piece{
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
         // dammy
-        Set<Point> set = new HashSet<Point>();
+        Set<Point> set = new HashSet<>();
         if(player_type == Player.AHEAD) {
             for(int i = 1; i < 10; i++) {
                 set.add(new Point(0, -i));
@@ -39,12 +39,15 @@ public class Kyosha extends Piece{
         int player_type = attacker instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND;
         Set<Point> set = new HashSet<>();
         int ini = player_type == Player.AHEAD ? -1 : 1;
-        for(int i = ini;  Math.abs(i) < 9;) {
-            i += ini;
+        for(int i = ini;  Math.abs(i) < 9;i += ini) {
             Point target = new Point(this.getPoint().x, this.getPoint().y+i);
-            if(attacker.getPieceTypeOnBoardAt(target) == 0 && defender.getPieceTypeOnBoardAt(target) >= 0 && GameBoard.isInGrid(target)){
+            System.out.println("target: " + target.x + " " + target.y);
+            if(GameBoard.isInGrid(target)) {
+                if (attacker.getPieceTypeOnBoardAt(target) > 0) {
+                    break;
+                }
                 set.add(target);
-                if(defender.getPieceTypeOnBoardAt(target) > 0){
+                if (defender.getPieceTypeOnBoardAt(target) > 0) {
                     break;
                 }
             }
