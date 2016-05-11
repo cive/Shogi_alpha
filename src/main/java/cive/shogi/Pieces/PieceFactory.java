@@ -8,7 +8,6 @@ import java.awt.*;
  */
 public class PieceFactory implements Constant{
     public Piece create(int pieceId, Point place) {
-        Piece piece = null;
         switch(pieceId) {
             case FU: return new Fu(place);
             case KYOSHA: return new Kyosha(place);
@@ -24,14 +23,35 @@ public class PieceFactory implements Constant{
         }
     }
     public Piece createPromoted(int pieceId, Point place) {
-        if(pieceId >= Piece.FU && pieceId <= Piece.GIN) {
-            Piece p = new Narikin(place);
-            p.setPre_typeOfPiece(pieceId);
-            return p;
-        } else if(pieceId == Piece.KAKU) {
+        if (pieceId == Piece.FU) {
+            return new Tokin(place);
+        } else if (pieceId == Piece.KYOSHA) {
+            return new Narikyo(place);
+        } else if (pieceId == Piece.KEIMA) {
+            return new Narikei(place);
+        } else if (pieceId == Piece.GIN) {
+            return new Narigin(place);
+        } else if (pieceId == Piece.KAKU) {
             return new Uma(place);
-        } else if(pieceId == Piece.HISHA) {
+        } else if (pieceId == Piece.HISHA) {
             return new Ryu(place);
+        } else {
+            return new EmptyPiece(place);
+        }
+    }
+    public Piece createDemoted(int pieceId, Point place) {
+        if (pieceId == Piece.TOKIN) {
+            return new Fu(place);
+        } else if (pieceId == Piece.NARIKYO) {
+            return new Kyosha(place);
+        } else if (pieceId == Piece.NARIKEI) {
+            return new Keima(place);
+        } else if (pieceId == Piece.NARIGIN) {
+            return new Gin(place);
+        } else if (pieceId == Piece.UMA) {
+            return new Kaku(place);
+        } else if (pieceId == Piece.RYU) {
+            return new Hisha(place);
         } else {
             return new EmptyPiece(place);
         }

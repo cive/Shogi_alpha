@@ -21,7 +21,7 @@ public class Kaku extends Piece {
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
         // dammy
-        Set<Point> set = new HashSet<Point>();
+        Set<Point> set = new HashSet<>();
         for(int i = -8; i < 9; i++) {
             if(i == 0) continue;
             set.add(new Point(i, i));
@@ -37,10 +37,10 @@ public class Kaku extends Piece {
         set.addAll(getSetToNeedToAdd(attacker, defender, true, -1, this.getPoint()));
         set.addAll(getSetToNeedToAdd(attacker, defender, false, -1, this.getPoint()));
         return set;
-    };
+    }
 
     public Set<Point> getSetToNeedToAdd(Player attacker, Player defender, boolean axis, int ini, Point selected) {
-         Set<Point> set_for_add = new HashSet<>();
+        Set<Point> set_for_add = new HashSet<>();
         for(int i = ini; Math.abs(i) < 9; i += ini) {
             Point target = new Point(selected.x+(axis?i:-i), selected.y+i);
             if(GameBoard.isInGrid(target)) {

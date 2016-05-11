@@ -6,7 +6,7 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Uma extends Piece{
+public class Uma extends Kaku{
     public Uma(Point p) {
         super(p);
     }
@@ -19,9 +19,10 @@ public class Uma extends Piece{
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
         // dammy
-        Set<Point> set = new HashSet<Point>();
-        Piece kaku = new Kaku(this.getPoint());
-        Piece gyoku = new Gyoku(this.getPoint());
+        Set<Point> set = new HashSet<>();
+        PieceFactory factory = new PieceFactory();
+        Piece kaku = factory.create(Piece.KAKU, this.getPoint());
+        Piece gyoku = factory.create(Piece.GYOKU, this.getPoint());
         set.addAll(kaku.getRuleOfPiece(player_type));
         set.addAll(gyoku.getRuleOfPiece(player_type));
         return set;
@@ -31,13 +32,12 @@ public class Uma extends Piece{
         return Piece.UMA;
     }
     @Override
-    public Integer getPre_typeOfPiece() {
-        return Piece.KAKU;
-    }
-    @Override
     public Set<Point> getCapablePutPoint(Player attacker, Player defender) {
         Set<Point> set = new HashSet<>();
-        set.addAll((new Kaku(this.getPoint()).getCapablePutPoint(attacker, defender)));
+        set.addAll(getSetToNeedToAdd(attacker, defender, true, 1, this.getPoint()));
+        set.addAll(getSetToNeedToAdd(attacker, defender, false, 1, this.getPoint()));
+        set.addAll(getSetToNeedToAdd(attacker, defender, true, -1, this.getPoint()));
+        set.addAll(getSetToNeedToAdd(attacker, defender, false, -1, this.getPoint()));
         set.addAll((new Gyoku(this.getPoint()).getCapablePutPoint(attacker, defender)));
         return set;
     }

@@ -107,7 +107,7 @@ public class GameBoard {
                 dst_piece = defender.getPieceOnBoardAt(dst).clone();
                 defender.reducePieceOnBoardAt(dst);
                 dst_piece.setPoint(new Point(-1,-1));
-                if(dst_piece.getPre_typeOfPiece() > 0)
+                if(dst_piece.getTypeOfPiece() > Piece.GYOKU)
                     attacker.addPiecesInHand(dst_piece.getDemotePiece());
                 else
                     attacker.addPiecesInHand(dst_piece);
@@ -130,7 +130,7 @@ public class GameBoard {
                 dst_piece = defender.getPieceOnBoardAt(dst).clone();
                 defender.reducePieceOnBoardAt(dst);
                 dst_piece.setPoint(new Point(-1,-1));
-                if(dst_piece.getPre_typeOfPiece() > 0)
+                if(dst_piece.getTypeOfPiece() > Piece.GYOKU)
                     attacker.addPiecesInHand(dst_piece.getDemotePiece());
                 else
                     attacker.addPiecesInHand(dst_piece);
@@ -168,7 +168,7 @@ public class GameBoard {
         }
         if(p == null) return false;
         p.setPoint(dst);
-        return p.getCapablePutPoint(attacker, defender).size() > 0;
+        return p.canMoveLater(attacker);
     }
 
     public void printBoard() {

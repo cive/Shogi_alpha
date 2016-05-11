@@ -37,12 +37,6 @@ public abstract class Piece implements Constant, Cloneable{
         return set;
     }
     public abstract Integer getTypeOfPiece();
-    public Integer getPre_typeOfPiece() {
-        return Piece.NONE;
-    }
-    public void setPre_typeOfPiece(int pre_type) {
-        // nop
-    }
     public Boolean canPromote(Point dst, boolean isAheadsTurn) {
         //this : src
         boolean aPromote = (0 <= dst.y && dst.y <= 2) || (0 <= this.getPoint().y && this.getPoint().y <= 2);
@@ -62,7 +56,15 @@ public abstract class Piece implements Constant, Cloneable{
     }
     public final Piece getDemotePiece() {
         PieceFactory factory = new PieceFactory();
-        return factory.create(getPre_typeOfPiece(), getPoint());
+        return factory.createDemoted(getTypeOfPiece(), getPoint());
+    }
+    public Boolean canMoveLater(Player attacker) {
+        int player_type = attacker instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND;
+        for (Point rule_of_point : this.getRuleOfPiece(player_type)) {
+            Point target = new Point(this.getPoint().x + rule_of_point.x, this.getPoint().y + rule_of_point.y);
+            if (GameBoard.isInGrid(target)) return true;
+        }
+        return false;
     }
     @Override
     public String toString() {

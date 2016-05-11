@@ -6,7 +6,7 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Ryu extends Piece {
+public class Ryu extends Hisha {
     public Ryu(Point p) {
         super(p);
     }
@@ -19,7 +19,7 @@ public class Ryu extends Piece {
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
         // dammy
-        Set<Point> set = new HashSet<Point>();
+        Set<Point> set = new HashSet<>();
         Piece hisha = new Hisha(this.getPoint());
         Piece gyoku = new Gyoku(this.getPoint());
         set.addAll(hisha.getRuleOfPiece(player_type));
@@ -32,13 +32,12 @@ public class Ryu extends Piece {
         return Piece.RYU;
     }
     @Override
-    public Integer getPre_typeOfPiece() {
-        return Piece.HISHA;
-    }
-    @Override
     public Set<Point> getCapablePutPoint(Player attacker, Player defender) {
         Set<Point> set = new HashSet<>();
-        set.addAll((new Hisha(this.getPoint()).getCapablePutPoint(attacker, defender)));
+        set.addAll(getSetToNeedToAdd(attacker, defender, true, 1, this.getPoint()));
+        set.addAll(getSetToNeedToAdd(attacker, defender, false, 1, this.getPoint()));
+        set.addAll(getSetToNeedToAdd(attacker, defender, true, -1, this.getPoint()));
+        set.addAll(getSetToNeedToAdd(attacker, defender, false, -1, this.getPoint()));
         set.addAll((new Gyoku(this.getPoint()).getCapablePutPoint(attacker, defender)));
         return set;
     }
