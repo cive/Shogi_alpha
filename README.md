@@ -1,4 +1,4 @@
-Shogi_alpha
+Shogi_alpha [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha)
 ===========
 
 #どんなプログラム?#
