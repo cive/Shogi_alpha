@@ -1,7 +1,7 @@
 package cive.shogi.Pieces;
 
-import cive.shogi.AheadPlayer;
-import cive.shogi.Player;
+import cive.shogi.Players.AheadPlayer;
+import cive.shogi.Players.Player;
 import org.junit.Test;
 
 import java.awt.*;

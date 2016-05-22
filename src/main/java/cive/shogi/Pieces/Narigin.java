@@ -1,7 +1,5 @@
 package cive.shogi.Pieces;
 
-import cive.shogi.Player;
-
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;

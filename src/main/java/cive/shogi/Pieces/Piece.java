@@ -1,12 +1,11 @@
 package cive.shogi.Pieces;
 
-import cive.shogi.AheadPlayer;
+import cive.shogi.Players.AheadPlayer;
 import cive.shogi.GameBoard;
-import cive.shogi.Player;
+import cive.shogi.Players.Player;
 
 import java.awt.*;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public abstract class Piece implements Constant, Cloneable{
@@ -65,6 +64,9 @@ public abstract class Piece implements Constant, Cloneable{
             if (GameBoard.isInGrid(target)) return true;
         }
         return false;
+    }
+    public Boolean isOnBoard() {
+        return 0 <= p.x && p.x <= 8;
     }
     @Override
     public String toString() {

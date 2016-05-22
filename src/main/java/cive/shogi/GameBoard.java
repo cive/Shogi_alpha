@@ -6,11 +6,15 @@
 package cive.shogi;
 
 import cive.shogi.Pieces.*;
+import cive.shogi.Players.AheadPlayer;
+import cive.shogi.Players.BehindPlayer;
+import cive.shogi.Players.Player;
 
 import java.awt.*;
 import java.util.*;
 
 public class GameBoard {
+    private Kifu kifu;
     private Player attacker;
     private Player defender;
     private Player playerA;
@@ -29,11 +33,15 @@ public class GameBoard {
     public void initGame() {
         playerA = new AheadPlayer();
         playerB = new BehindPlayer();
+        kifu = new Kifu();
+        kifu.setInitialPlayers(playerA, playerB);
         setTurn(true);
     }
     public void initGame(int rule) {
         playerA = new AheadPlayer(rule);
         playerB = new BehindPlayer();
+        kifu = new Kifu();
+        kifu.setInitialPlayers(playerA, playerB);
         setTurn(true);
     }
     public Piece getPieceOf(Point p) {
@@ -87,6 +95,13 @@ public class GameBoard {
     public void placePieceInHand(Piece piece, Point dst){
     	// 持ち駒を置けるなら置いて，交代
     	if(wouldMoveNextLater(piece,dst) && !selected_will_be_niFu(piece, dst.x) && !isTherePieceAt(dst)){
+
+            // 棋譜の登録
+            Piece src_piece = new PieceFactory().create(Piece.NONE, new Point(-1, -1));
+            Piece dst_piece = new PieceFactory().create(piece.getTypeOfPiece(), dst);
+            dst_piece.setPoint(dst);
+            kifu.update(new BoardSurface(src_piece, dst_piece), attacker, defender);
+
             attacker.reducePieceInHandThatIs(piece);
     		// 持ち駒を置く
             piece.setPoint(dst);
@@ -101,6 +116,12 @@ public class GameBoard {
         Piece dst_piece;
         try {
             src_piece = attacker.getPieceOnBoardAt(src).clone();
+
+            // 棋譜の登録
+            Piece dst_piece_for_kifu = src_piece.clone();
+            dst_piece_for_kifu.setPoint(dst);
+            kifu.update(new BoardSurface(src_piece, dst_piece_for_kifu), attacker, defender);
+
             attacker.reducePieceOnBoardAt(src);
             src_piece.setPoint(dst);
             if(defender.getPieceTypeOnBoardAt(dst) > 0) {
@@ -119,11 +140,22 @@ public class GameBoard {
         }
     }
 
+    /**
+     *
+     * @param src
+     * @param dst
+     */
     public void replacePieceWithPromote(Point src, Point dst) {
         Piece src_piece;
         Piece dst_piece;
         try {
             src_piece = attacker.getPieceOnBoardAt(src).clone();
+
+            // 棋譜の登録
+            Piece dst_piece_for_kifu = src_piece.clone();
+            dst_piece_for_kifu.setPoint(dst);
+            kifu.update(new BoardSurface(src_piece, dst_piece_for_kifu.getPromotePiece()), attacker, defender);
+
             attacker.reducePieceOnBoardAt(src);
             src_piece.setPoint(dst);
             if(defender.getPieceTypeOnBoardAt(dst) > 0) {
@@ -137,6 +169,32 @@ public class GameBoard {
             }
             attacker.addPiecesOnBoard(src_piece.getPromotePiece());
             this.nextTurn();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void replaceAt(int num) {
+        try {
+            attacker = kifu.getIniAttacker();
+            defender = kifu.getIniDefender();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        setTurn(true);
+        ArrayList<BoardSurface> list = kifu.getList();
+        if (num > list.size()) return;
+        try {
+            for (int i = 0; i < num; i++) {
+                BoardSurface bs = list.get(i);
+                if (!bs.getSrc().isOnBoard()) {
+                    placePieceInHand(bs.getDst(), bs.getDst().getPoint());
+                } else if (bs.getDst().getTypeOfPiece() != bs.getSrc().getTypeOfPiece()) {
+                    replacePieceWithPromote(bs.getSrc().getPoint(), bs.getDst().getPoint());
+                } else {
+                    replacePiece(bs.getSrc().getPoint(), bs.getDst().getPoint());
+                }
+            }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -181,5 +239,8 @@ public class GameBoard {
             }
             System.out.println();
         }
+    }
+    public ArrayList<BoardSurface> getKifuList() {
+        return kifu.getList();
     }
 }

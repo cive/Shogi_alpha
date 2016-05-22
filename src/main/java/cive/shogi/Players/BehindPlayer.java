@@ -1,4 +1,4 @@
-package cive.shogi;
+package cive.shogi.Players;
 
 import java.awt.*;
 import cive.shogi.Pieces.*;

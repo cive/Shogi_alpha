@@ -2,6 +2,8 @@ package cive.shogi;
 
 import cive.shogi.Pieces.EmptyPiece;
 import cive.shogi.Pieces.Piece;
+import cive.shogi.Players.AheadPlayer;
+import cive.shogi.Players.Player;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

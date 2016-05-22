@@ -1,8 +1,9 @@
 package cive.shogi;
 
-import cive.shogi.Pieces.Fu;
 import cive.shogi.Pieces.Piece;
 import cive.shogi.Pieces.PieceFactory;
+import cive.shogi.Players.AheadPlayer;
+import cive.shogi.Players.Player;
 import org.junit.Test;
 
 import java.awt.*;

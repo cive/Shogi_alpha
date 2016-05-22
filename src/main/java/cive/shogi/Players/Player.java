@@ -1,21 +1,24 @@
-package cive.shogi;
+package cive.shogi.Players;
 
 import cive.shogi.Pieces.*;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Created by yotuba on 16/03/12.
  * Player class
  * have pieces on board and in hand.
  */
-public abstract class Player {
+public abstract class Player implements Cloneable{
     public final static int AHEAD = 0;
     public final static int BEHIND = 1;
     static final int FU_OCHI = 0;
     static final int HISHA_KAKU_OCHI = 1;
+    public Player clone() throws CloneNotSupportedException {
+        return (Player)super.clone();
+    }
     private ArrayList<Piece> piecesOnBoard = new ArrayList<>();
     private ArrayList<Piece> piecesInHand = new ArrayList<>();
     public ArrayList<Piece> getPiecesOnBoard() {
@@ -31,6 +34,10 @@ public abstract class Player {
         this.piecesInHand.add(p);
     }
     // n <= 34
+    // O(n)
+    public Stream<Piece> getPiecesOnBoard(int type) {
+        return piecesOnBoard.stream().filter(x -> x.getTypeOfPiece() == type);
+    }
     // O(n)
     public Piece getPieceOnBoardAt(Point p) {
         for (Piece piece : piecesOnBoard) {

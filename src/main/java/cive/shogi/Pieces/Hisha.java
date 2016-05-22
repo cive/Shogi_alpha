@@ -1,11 +1,10 @@
 package cive.shogi.Pieces;
 
 import cive.shogi.GameBoard;
-import cive.shogi.Player;
+import cive.shogi.Players.Player;
 
 import java.awt.*;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public class Hisha extends Piece {
