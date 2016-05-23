@@ -92,7 +92,7 @@ public class GameBoard {
     public boolean isTherePieceAt(Point p) {
         return attacker.getPieceTypeOnBoardAt(p) + defender.getPieceTypeOnBoardAt(p) > 0;
     }
-    public void placePieceInHand(Piece piece, Point dst){
+    public void placePieceInHand(Piece piece, Point dst, Boolean opt){
     	// 持ち駒を置けるなら置いて，交代
     	if(wouldMoveNextLater(piece,dst) && !selected_will_be_niFu(piece, dst.x) && !isTherePieceAt(dst)){
 
@@ -100,7 +100,7 @@ public class GameBoard {
             Piece src_piece = new PieceFactory().create(Piece.NONE, new Point(-1, -1));
             Piece dst_piece = new PieceFactory().create(piece.getTypeOfPiece(), dst);
             dst_piece.setPoint(dst);
-            kifu.update(new BoardSurface(src_piece, dst_piece), attacker, defender);
+            kifu.update(new MovementOfPiece(src_piece, dst_piece), attacker, defender);
 
             attacker.reducePieceInHandThatIs(piece);
     		// 持ち駒を置く
@@ -111,16 +111,22 @@ public class GameBoard {
     	}
     }
 
-    public void replacePiece(Point src, Point dst) {
+    public void placePieceInHand(Piece piece, Point dst) {
+        placePieceInHand(piece, dst, true);
+    }
+
+    public void replacePiece(Point src, Point dst, Boolean opt) {
         Piece src_piece;
         Piece dst_piece;
         try {
             src_piece = attacker.getPieceOnBoardAt(src).clone();
 
             // 棋譜の登録
-            Piece dst_piece_for_kifu = src_piece.clone();
-            dst_piece_for_kifu.setPoint(dst);
-            kifu.update(new BoardSurface(src_piece, dst_piece_for_kifu), attacker, defender);
+            if (opt) {
+                Piece dst_piece_for_kifu = src_piece.clone();
+                dst_piece_for_kifu.setPoint(dst);
+                kifu.update(new MovementOfPiece(src_piece, dst_piece_for_kifu), attacker, defender);
+            }
 
             attacker.reducePieceOnBoardAt(src);
             src_piece.setPoint(dst);
@@ -140,21 +146,27 @@ public class GameBoard {
         }
     }
 
+    public void replacePiece(Point src, Point dst) {
+        replacePiece(src, dst, true);
+    }
+
     /**
      *
-     * @param src
-     * @param dst
+     * @param src 移動前
+     * @param dst 移動先
      */
-    public void replacePieceWithPromote(Point src, Point dst) {
+    public void replacePieceWithPromote(Point src, Point dst, Boolean opt) {
         Piece src_piece;
         Piece dst_piece;
         try {
             src_piece = attacker.getPieceOnBoardAt(src).clone();
 
             // 棋譜の登録
-            Piece dst_piece_for_kifu = src_piece.clone();
-            dst_piece_for_kifu.setPoint(dst);
-            kifu.update(new BoardSurface(src_piece, dst_piece_for_kifu.getPromotePiece()), attacker, defender);
+            if (opt) {
+                Piece dst_piece_for_kifu = src_piece.clone();
+                dst_piece_for_kifu.setPoint(dst);
+                kifu.update(new MovementOfPiece(src_piece, dst_piece_for_kifu.getPromotePiece()), attacker, defender);
+            }
 
             attacker.reducePieceOnBoardAt(src);
             src_piece.setPoint(dst);
@@ -174,30 +186,34 @@ public class GameBoard {
         }
     }
 
+    public void replacePieceWithPromote(Point src, Point dst) {
+        replacePieceWithPromote(src, dst, true);
+    }
+
     public void replaceAt(int num) {
         try {
-            attacker = kifu.getIniAttacker();
-            defender = kifu.getIniDefender();
+            attacker.update(kifu.getIniAttacker());
+            defender.update(kifu.getIniDefender());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        setTurn(true);
-        ArrayList<BoardSurface> list = kifu.getList();
+        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceArrayList();
         if (num > list.size()) return;
         try {
             for (int i = 0; i < num; i++) {
-                BoardSurface bs = list.get(i);
+                MovementOfPiece bs = list.get(i);
                 if (!bs.getSrc().isOnBoard()) {
-                    placePieceInHand(bs.getDst(), bs.getDst().getPoint());
-                } else if (bs.getDst().getTypeOfPiece() != bs.getSrc().getTypeOfPiece()) {
-                    replacePieceWithPromote(bs.getSrc().getPoint(), bs.getDst().getPoint());
+                    placePieceInHand(bs.getDst(), bs.getDst().getPoint(), false);
+                } else if (!Objects.equals(bs.getDst().getTypeOfPiece(), bs.getSrc().getTypeOfPiece())) {
+                    replacePieceWithPromote(bs.getSrc().getPoint(), bs.getDst().getPoint(), false);
                 } else {
-                    replacePiece(bs.getSrc().getPoint(), bs.getDst().getPoint());
+                    replacePiece(bs.getSrc().getPoint(), bs.getDst().getPoint(), false);
                 }
             }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
+        kifu.undo(list.size() - num);
     }
 
     // 与えられた位置が含まれる列に，既に歩があればtrue
@@ -240,7 +256,7 @@ public class GameBoard {
             System.out.println();
         }
     }
-    public ArrayList<BoardSurface> getKifuList() {
-        return kifu.getList();
+    public ArrayList<MovementOfPiece> getKifuList() {
+        return kifu.getMovementOfPieceArrayList();
     }
 }

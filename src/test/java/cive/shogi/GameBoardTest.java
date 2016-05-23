@@ -108,6 +108,6 @@ public class GameBoardTest {
         // 一回目の駒移動を再現
         gameBoard.replaceAt(1);
         gameBoard.replacePiece(new Point(2,2), new Point(2,3));
-        assertFalse(gameBoard.getKifuList().size() == 3);
+        assertFalse(gameBoard.getKifuList().size() == 2);
     }
 }

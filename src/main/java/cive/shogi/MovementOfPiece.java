@@ -2,12 +2,14 @@ package cive.shogi;
 
 import cive.shogi.Pieces.Piece;
 import cive.shogi.Players.Player;
+import com.rits.cloning.Cloner;
 
 /**
  * Created by yotuba on 16/05/20.
+ * 盤面のデータ構造
  */
-public class BoardSurface {
-    public BoardSurface(Piece src, Piece dst) {
+public class MovementOfPiece {
+    public MovementOfPiece(Piece src, Piece dst) {
         setDst(dst);
         setSrc(src);
     }
@@ -27,9 +29,9 @@ public class BoardSurface {
             e.printStackTrace();
         }
     }
-    public Piece getDst() throws CloneNotSupportedException {
+    public Piece getDst() throws CloneNotSupportedException{
         return dst.clone();
-    };
+    }
     public Piece getSrc() throws CloneNotSupportedException {
         return src.clone();
     }

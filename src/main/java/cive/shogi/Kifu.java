@@ -3,14 +3,18 @@ package cive.shogi;
 import cive.shogi.Pieces.EmptyPiece;
 import cive.shogi.Pieces.Piece;
 import cive.shogi.Players.Player;
-import com.sun.scenario.effect.impl.sw.java.JSWBlend_MULTIPLYPeer;
 import org.w3c.dom.ranges.RangeException;
 
 import java.util.ArrayList;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by yotuba on 16/05/06.
+ * 棋譜を記録
+ * プレイヤーの初期の持ち駒 と 駒の移動を記録
+ * undo, redoを使って手番(count)を変更
+ * もし、実際の手番(movementOfPieceList.size())よりも前の手番を参照していたらそれ以降の盤面を削除し、そこから新規に記録する
  */
 public class Kifu {
     private class Players {
@@ -43,11 +47,11 @@ public class Kifu {
     }
     int count;
     Players initialPlayers;
-    ArrayList<BoardSurface> list = null;
-    ArrayList<String> infoList = null;
+    ArrayList<MovementOfPiece> movementOfPieceArrayList = null;
+    ArrayList<String> kifuList = null;
     public Kifu() {
-        list = new ArrayList<>();
-        infoList = new ArrayList<>();
+        movementOfPieceArrayList = new ArrayList<>();
+        kifuList = new ArrayList<>();
     }
     public void setInitialPlayers(Player attacker, Player defender) {
         initialPlayers = new Players(attacker, defender);
@@ -59,12 +63,10 @@ public class Kifu {
         return initialPlayers.getDefender();
     }
     public Boolean hasAhead(int num) {
-        if (num <= 0) return false;
-        return (count > 0 && count >= num);
+        return num > 0 && (count > 0 && count >= num);
     }
     public Boolean hasNext(int num) {
-        if (num <= 0) return false;
-        return count + num <= list.size();
+        return num > 0 && count + num <= movementOfPieceArrayList.size();
     }
     public void undo(int num) {
         if (num <= 0) return;
@@ -72,36 +74,66 @@ public class Kifu {
     }
     public void redo(int num) {
         if (num <= 0) return;
-        if (count + num <= list.size()) count += num;
+        if (count + num <= movementOfPieceArrayList.size()) count += num;
     }
-    public ArrayList<BoardSurface> getList() {
-        return list;
+
+    /**
+     * 駒の移動を記録したデータリストを返す
+     * @return 駒の移動を記録したリスト
+     */
+    public ArrayList<MovementOfPiece> getMovementOfPieceArrayList() {
+        return movementOfPieceArrayList;
     }
-    public void update(BoardSurface bs, Player attacker, Player defender, int num) throws RangeException {
-        if (num > list.size() + 1 || num < 0) {
+
+    /**
+     * {@param num}番目からの状態にリストをアップデートする
+     * ゲーム上で戻るなどして、途中からはじめるときに使用する
+     * @param mp 駒の移動
+     * @param attacker 駒を移動する側
+     * @param defender 防御側
+     * @param num 何手目をアップデートするか
+     * @throws RangeException {@param num}が不正
+     */
+    public void update(MovementOfPiece mp, Player attacker, Player defender, int num) throws RangeException {
+        if (num > movementOfPieceArrayList.size() + 1 || num < 0) {
             throw new RangeException(RangeException.BAD_BOUNDARYPOINTS_ERR, "範囲外の値です");
-        } else if (list.size() > num) {
-            while (list.size() > num) {
-                list.remove(num);
+        } else if (movementOfPieceArrayList.size() > num) {
+            while (movementOfPieceArrayList.size() > num) {
+                movementOfPieceArrayList.remove(num);
             }
         }
-        list.add(bs);
+        movementOfPieceArrayList.add(mp);
         try {
-            infoList.add(getInfo(bs, list.get(list.size() - 1), attacker.clone(), defender.clone()));
+            kifuList.add(getKifu(
+                    mp
+                    , movementOfPieceArrayList.get(movementOfPieceArrayList.size() - 1)
+                    , attacker.clone()
+                    , defender.clone()
+            ));
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
         count = num;
     }
-    public void update(BoardSurface bs, Player attacker, Player defender) {
+    public void update(MovementOfPiece bs, Player attacker, Player defender) {
         try {
             update(bs, attacker.clone(), defender.clone(), count+1);
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
     }
-    public String getInfo(BoardSurface now, BoardSurface prev, Player attacker, Player defender) {
-        Piece cSrc = null, cDst = null;
+
+    /**
+     * 棋譜(String)を出力するメソッド
+     * updateされる毎に実行される
+     * @param now 現在の盤面
+     * @param prev 一つ前の盤面
+     * @param attacker 現在の盤面の攻撃側
+     * @param defender 現在の盤面の防御側
+     * @return 棋譜
+     */
+    private String getKifu(MovementOfPiece now, MovementOfPiece prev, Player attacker, Player defender) {
+        Piece cSrc, cDst;
         try {
             cSrc = now.getSrc();
             cDst = now.getDst();
@@ -147,10 +179,15 @@ public class Kifu {
             }
         }
         if (src_type == Piece.GIN) {
-            Stream<Piece> gins = attacker.getPiecesOnBoard(src_type)
-                    .filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
-                    .filter(x -> !x.getPoint().equals(src.getPoint()));
-            boolean there_were_gin_on_col = gins.anyMatch(g -> g.getPoint().y - src.getPoint().y == 0);
+            List<Piece> gins = new ArrayList<>(
+                    Arrays.asList(
+                        attacker.getPiecesOnBoard(src_type)
+                        .filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
+                        .filter(x -> !x.getPoint().equals(src.getPoint()))
+                        .toArray(Piece[]::new)
+                    )
+            );
+            boolean there_were_gin_on_col = gins.stream().anyMatch(g -> g.getPoint().y - src.getPoint().y == 0);
             boolean top = dst.getPoint().x - src.getPoint().x == 0
                     && (dst.getPoint().y - src.getPoint().y) * trans > 0;
             boolean right_top = (dst.getPoint().x - src.getPoint().x) * trans > 0
@@ -161,32 +198,32 @@ public class Kifu {
                     && (dst.getPoint().y - src.getPoint().y) * trans < 0;
             boolean left_bottom = (dst.getPoint().x - src.getPoint().x) * trans < 0
                     && (dst.getPoint().y - src.getPoint().y) * trans < 0;
-            if (gins.count() == 0) {
+            if (gins.stream().count() == 0) {
                 str += "";
             } else if (top) {
                 if (there_were_gin_on_col) str += "直";
                 else str += "上";
             } else if (right_top) {
                 boolean there_were_gin_in_front_of =
-                        gins.anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == 2);
+                        gins.stream().anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == 2);
                 if (!there_were_gin_on_col) str += "上";
                 else if (there_were_gin_in_front_of) str += "左上";
                 else str += "左";
             } else if (left_top) {
                 boolean there_were_gin_in_front_of =
-                        gins.anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == 2);
+                        gins.stream().anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == 2);
                 if (!there_were_gin_on_col) str += "上";
                 else if (there_were_gin_in_front_of) str += "右上";
                 else str += "右";
             } else if (right_bottom) {
                 boolean there_were_gin_behind =
-                        gins.anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == -2);
+                        gins.stream().anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == -2);
                 if (!there_were_gin_on_col) str += "引";
                 else if (there_were_gin_behind) str += "左引";
                 else str += "左";
             } else if (left_bottom) {
                 boolean there_were_gin_behind =
-                        gins.anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == -2);
+                        gins.stream().anyMatch(g -> (g.getPoint().y - src.getPoint().y) * trans == -2);
                 if (!there_were_gin_on_col) str += "引";
                 else if (there_were_gin_behind) str += "右引";
                 else str += "右";

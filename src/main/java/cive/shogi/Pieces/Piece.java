@@ -23,7 +23,9 @@ public abstract class Piece implements Constant, Cloneable{
         return p;
     }
     public Piece clone() throws CloneNotSupportedException {
-        return (Piece)super.clone();
+        Piece c = (Piece)super.clone();
+        c.p = new Point(p);
+        return c;
     }
     public abstract Set<Point> getRuleOfPiece(int player_type);
     public Set<Point> getCapablePutPoint(Player attacker, Player defender) {

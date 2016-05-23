@@ -17,7 +17,10 @@ public abstract class Player implements Cloneable{
     static final int FU_OCHI = 0;
     static final int HISHA_KAKU_OCHI = 1;
     public Player clone() throws CloneNotSupportedException {
-        return (Player)super.clone();
+        Player c = (Player)super.clone();
+        c.piecesInHand = new ArrayList<>(piecesInHand);
+        c.piecesOnBoard = new ArrayList<>(piecesOnBoard);
+        return c;
     }
     private ArrayList<Piece> piecesOnBoard = new ArrayList<>();
     private ArrayList<Piece> piecesInHand = new ArrayList<>();
@@ -80,6 +83,8 @@ public abstract class Player implements Cloneable{
         return false;
     }
     protected void setInitial(int rule) {
+        piecesOnBoard.clear();
+        piecesInHand.clear();
         if(rule == FU_OCHI) {
             setKaku();
             setHisha();
@@ -108,6 +113,12 @@ public abstract class Player implements Cloneable{
         setKeima();
         setKyosha();
         setGyoku();
+    }
+    public void update(Player player) {
+        piecesInHand.clear();
+        piecesOnBoard.clear();
+        piecesInHand.addAll(player.getPiecesInHand());
+        piecesOnBoard.addAll(player.getPiecesOnBoard());
     }
     abstract protected void setFu();
     abstract protected void setKyosha();
