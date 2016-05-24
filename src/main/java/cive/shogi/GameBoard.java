@@ -152,8 +152,9 @@ public class GameBoard {
 
     /**
      *
-     * @param src 移動前
+     * @param src 移動元
      * @param dst 移動先
+     * @param opt 棋譜に登録するなら{@code true}
      */
     public void replacePieceWithPromote(Point src, Point dst, Boolean opt) {
         Piece src_piece;

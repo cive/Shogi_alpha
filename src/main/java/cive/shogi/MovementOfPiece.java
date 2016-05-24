@@ -1,9 +1,6 @@
 package cive.shogi;
 
 import cive.shogi.Pieces.Piece;
-import cive.shogi.Players.Player;
-import com.rits.cloning.Cloner;
-
 /**
  * Created by yotuba on 16/05/20.
  * 盤面のデータ構造

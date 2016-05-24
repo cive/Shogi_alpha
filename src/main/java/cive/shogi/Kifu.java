@@ -86,13 +86,13 @@ public class Kifu {
     }
 
     /**
-     * {@param num}番目からの状態にリストをアップデートする
+     * num番目からの状態にリストをアップデートする
      * ゲーム上で戻るなどして、途中からはじめるときに使用する
      * @param mp 駒の移動
      * @param attacker 駒を移動する側
      * @param defender 防御側
-     * @param num 何手目をアップデートするか
-     * @throws RangeException {@param num}が不正
+     * @param num num手目にアップデート、それ以降の棋譜は削除
+     * @throws RangeException 入力値numが不正
      */
     public void update(MovementOfPiece mp, Player attacker, Player defender, int num) throws RangeException {
         if (num > movementOfPieceArrayList.size() + 1 || num < 0) {
