@@ -16,12 +16,20 @@ public abstract class Piece implements Constant, Cloneable{
     public String getName() {
         return "　";
     }
+    public String getName(Boolean in_English) {
+        if (in_English) {
+            return "  ";
+        } else {
+            return getName();
+        }
+    }
     public void setPoint(Point p) {
         this.p = p;
     }
     public Point getPoint() {
         return p;
     }
+    @Override
     public Piece clone() throws CloneNotSupportedException {
         Piece c = (Piece)super.clone();
         c.p = new Point(p);

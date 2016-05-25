@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 
 import static org.junit.Assert.*;
@@ -25,15 +24,16 @@ public class KifuTest {
         Kifu kifu = new Kifu();
         Player attacker = new AheadPlayer();
         Player defender = new BehindPlayer();
-        assertTrue(kifu.getCount() == 0);
+        assertTrue(kifu.getMovedNum() == 0);
         PieceFactory pf = new PieceFactory();
         Point ptSrc = new Point(0, 6);
         Point ptDst = new Point(0, 5);
         Piece src = pf.create(Piece.FU, ptSrc);
         Piece dst = pf.create(Piece.FU, ptDst);
         kifu.update(new MovementOfPiece(src, dst), attacker, defender);
-        assertTrue(kifu.getCount() == 1);
-        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceArrayList();
+        kifu.updateHash("a");
+        assertTrue(kifu.getMovedNum() == 1);
+        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceList();
         assertTrue (list.size() == 1);
         for (MovementOfPiece bs : list) {
             try {
@@ -55,11 +55,13 @@ public class KifuTest {
         Piece dst1 = pf.create(Piece.FU, new Point(0, 5));
         bs[0] = new MovementOfPiece(src1, dst1);
         kifu.update(bs[0], attacker, defender);
-        Piece src2 = pf.create(Piece.FU, new Point(0, 5));
-        Piece dst2 = pf.create(Piece.FU, new Point(0, 4));
+        kifu.updateHash("a");
+        Piece src2 = pf.create(Piece.FU, new Point(0, 2));
+        Piece dst2 = pf.create(Piece.FU, new Point(0, 3));
         bs[1] = new MovementOfPiece(src2, dst2);
         kifu.update(bs[1], attacker, defender);
-        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceArrayList();
+        kifu.updateHash("b");
+        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceList();
         assertTrue (list.size() == 2);
         assertTrue (kifu.isBlackTurn());
         try {
@@ -87,19 +89,21 @@ public class KifuTest {
         assertFalse(kifu.hasAhead(1));
         bs[0] = new MovementOfPiece(src1, dst1);
         kifu.update(bs[0], attacker, defender);
+        kifu.updateHash("a");
         assertTrue(kifu.hasAhead(1));
         assertFalse(kifu.hasAhead(2));
-        Piece src2 = pf.create(Piece.FU, new Point(0, 5));
-        Piece dst2 = pf.create(Piece.FU, new Point(0, 4));
+        Piece src2 = pf.create(Piece.FU, new Point(0, 2));
+        Piece dst2 = pf.create(Piece.FU, new Point(0, 3));
         bs[1] = new MovementOfPiece(src2, dst2);
         kifu.update(bs[1], attacker, defender);
+        kifu.updateHash("b");
         assertTrue(kifu.hasAhead(1));
         assertTrue(kifu.hasAhead(2));
         if(kifu.hasAhead(1)) { /* 一つ前に手があるか */
             kifu.undo(1); /* 棋譜は保存したままカウントを減らす */
         }
-        assertTrue(kifu.getCount() == 1);
-        assertTrue(kifu.getMovementOfPieceArrayList().size() == 2);
+        assertTrue(kifu.getMovedNum() == 1);
+        assertTrue(kifu.getMovementOfPieceList().size() == 2);
         assertFalse(kifu.isBlackTurn());
     }
     @Test
@@ -118,20 +122,22 @@ public class KifuTest {
         assertFalse(kifu.hasAhead(1));
         bs[0] = new MovementOfPiece(src1, dst1);
         kifu.update(bs[0], attacker, defender);
-        Piece src2 = pf.create(Piece.FU, new Point(0, 5));
-        Piece dst2 = pf.create(Piece.FU, new Point(0, 4));
+        kifu.updateHash("aaa");
+        Piece src2 = pf.create(Piece.FU, new Point(0, 2));
+        Piece dst2 = pf.create(Piece.FU, new Point(0, 3));
         bs[1] = new MovementOfPiece(src2, dst2);
         kifu.update(bs[1], attacker, defender);
+        kifu.updateHash("bbb");
         if(kifu.hasAhead(1)) {
             kifu.undo(1);
         }
-        assertTrue(kifu.getCount() == 1);
-        assertTrue(kifu.getMovementOfPieceArrayList().size() == 2);
+        assertTrue(kifu.getMovedNum() == 1);
+        assertTrue(kifu.getMovementOfPieceList().size() == 2);
         if(kifu.hasNext(1)) {
             kifu.redo(1);
         }
-        assertTrue(kifu.getCount() == 2);
-        assertTrue(kifu.getMovementOfPieceArrayList().size() == 2);
+        assertTrue(kifu.getMovedNum() == 2);
+        assertTrue(kifu.getMovementOfPieceList().size() == 2);
     }
     @Test
     public void 初期配置の登録() {
@@ -145,5 +151,37 @@ public class KifuTest {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
+    }
+    @Test public void 千日手の判定() {
+        Kifu kifu = new Kifu();
+        Player attacker = new AheadPlayer();
+        Player defender = new BehindPlayer();
+        MovementOfPiece bs[] = new MovementOfPiece[4];
+        String hexString = "0x01faabcde084";
+        PieceFactory pf = new PieceFactory();
+        Piece src1 = pf.create(Piece.FU, new Point(0, 6));
+        Piece dst1 = pf.create(Piece.FU, new Point(0, 5));
+        assertFalse(kifu.hasAhead(1));
+        bs[0] = new MovementOfPiece(src1, dst1);
+        kifu.update(bs[0], attacker, defender);
+        kifu.updateHash(hexString);
+        Piece src2 = pf.create(Piece.FU, new Point(0, 2));
+        Piece dst2 = pf.create(Piece.FU, new Point(0, 3));
+        bs[1] = new MovementOfPiece(src2, dst2);
+        kifu.update(bs[1], attacker, defender);
+        assertTrue(!kifu.hasSafeUpdated);
+        kifu.updateHash(hexString);
+        assertTrue(kifu.hasSafeUpdated);
+        Piece src3 = pf.create(Piece.FU, new Point(0, 5));
+        Piece dst3 = pf.create(Piece.FU, new Point(0, 4));
+        bs[2] = new MovementOfPiece(src3, dst3);
+        kifu.update(bs[2], attacker, defender);
+        kifu.updateHash(hexString);
+        Piece src4 = pf.create(Piece.FU, new Point(0, 3));
+        Piece dst4 = pf.create(Piece.FU, new Point(0, 4));
+        bs[3] = new MovementOfPiece(src4, dst4);
+        kifu.update(bs[3], attacker, defender);
+        kifu.updateHash(hexString);
+        assertTrue (kifu.isSennnichite());
     }
 }

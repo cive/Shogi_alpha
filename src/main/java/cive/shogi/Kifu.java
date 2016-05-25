@@ -13,7 +13,7 @@ import java.util.List;
  * Created by yotuba on 16/05/06.
  * 棋譜を記録
  * プレイヤーの初期の持ち駒 と 駒の移動を記録
- * undo, redoを使って手番(count)を変更
+ * undo, redoを使って手数(movedNum)を変更
  * もし、実際の手番(movementOfPieceList.size())よりも前の手番を参照していたらそれ以降の盤面を削除し、そこから新規に記録する
  */
 public class Kifu {
@@ -45,13 +45,17 @@ public class Kifu {
             return defender.clone();
         }
     }
-    int count;
-    Players initialPlayers;
-    ArrayList<MovementOfPiece> movementOfPieceArrayList = null;
-    ArrayList<String> kifuList = null;
+    private int movedNum;
+    public Boolean hasSafeUpdated;
+    private Players initialPlayers;
+    private ArrayList<MovementOfPiece> movementOfPieceList = null;
+    private ArrayList<String> kifuList = null;
+    private List<String> hashList = null;
     public Kifu() {
-        movementOfPieceArrayList = new ArrayList<>();
+        movementOfPieceList = new ArrayList<>();
         kifuList = new ArrayList<>();
+        hashList = new ArrayList<>();
+        hasSafeUpdated = true;
     }
     public void setInitialPlayers(Player attacker, Player defender) {
         initialPlayers = new Players(attacker, defender);
@@ -63,63 +67,94 @@ public class Kifu {
         return initialPlayers.getDefender();
     }
     public Boolean hasAhead(int num) {
-        return num > 0 && (count > 0 && count >= num);
+        return num > 0 && (movedNum > 0 && movedNum >= num);
     }
     public Boolean hasNext(int num) {
-        return num > 0 && count + num <= movementOfPieceArrayList.size();
+        return num > 0 && movedNum + num <= movementOfPieceList.size();
     }
     public void undo(int num) {
         if (num <= 0) return;
-        if (count > 0 && count >= num) count -= num;
+        if (movedNum > 0 && movedNum >= num) movedNum -= num;
     }
     public void redo(int num) {
         if (num <= 0) return;
-        if (count + num <= movementOfPieceArrayList.size()) count += num;
+        if (movedNum + num <= movementOfPieceList.size()) movedNum += num;
     }
 
     /**
      * 駒の移動を記録したデータリストを返す
      * @return 駒の移動を記録したリスト
      */
-    public ArrayList<MovementOfPiece> getMovementOfPieceArrayList() {
-        return movementOfPieceArrayList;
+    public ArrayList<MovementOfPiece> getMovementOfPieceList() {
+        return movementOfPieceList;
     }
 
     /**
-     * num番目からの状態にリストをアップデートする
-     * ゲーム上で戻るなどして、途中からはじめるときに使用する
+     * undo(n)でn手前にセットすることでn手前以降のデータを削除し、n+1手目のデータをセットする
+     * num = list.size() - n となる
+     * 実際に外から実行できるのは update(MovementOfPiece, Player, Player)のみ
      * @param mp 駒の移動
      * @param attacker 駒を移動する側
      * @param defender 防御側
      * @param num num手目にアップデート、それ以降の棋譜は削除
      * @throws RangeException 入力値numが不正
      */
-    public void update(MovementOfPiece mp, Player attacker, Player defender, int num) throws RangeException {
-        if (num > movementOfPieceArrayList.size() + 1 || num < 0) {
+    private void update(MovementOfPiece mp, Player attacker, Player defender, int num) throws RangeException {
+        if (num > movementOfPieceList.size() + 1 || num < 0) {
             throw new RangeException(RangeException.BAD_BOUNDARYPOINTS_ERR, "範囲外の値です");
-        } else if (movementOfPieceArrayList.size() > num) {
-            while (movementOfPieceArrayList.size() > num) {
-                movementOfPieceArrayList.remove(num);
+        } else if (movementOfPieceList.size() > num) {
+            while (movementOfPieceList.size() > num) {
+                movementOfPieceList.remove(num);
+                kifuList.remove(num);
+                hashList.remove(num);
             }
         }
-        movementOfPieceArrayList.add(mp);
+        movementOfPieceList.add(mp);
         try {
             kifuList.add(getKifu(
                     mp
-                    , movementOfPieceArrayList.get(movementOfPieceArrayList.size() - 1)
+                    , movementOfPieceList.get(movementOfPieceList.size() - 1)
                     , attacker.clone()
                     , defender.clone()
             ));
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        count = num;
+        movedNum = num;
     }
-    public void update(MovementOfPiece bs, Player attacker, Player defender) {
+
+    /**
+     * {@code undo(n)}でn手前にセットすることでn手前以降のデータを削除し、n+1手目のデータをセットする
+     * {@code undo(n)}を使用していない場合は、棋譜を登録するのみ
+     * 使用後は {@code updateHash}を使用すること
+     * @param mp 駒の移動
+     * @param attacker 駒を移動する側
+     * @param defender 防御側
+     */
+    public void update(MovementOfPiece mp, Player attacker, Player defender) {
+        if (!hasSafeUpdated) {
+            System.err.println("haven't update fully");
+            return;
+        }
         try {
-            update(bs, attacker.clone(), defender.clone(), count+1);
+            update(mp, attacker.clone(), defender.clone(), movedNum +1);
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
+        }
+        hasSafeUpdated = false;
+    }
+
+    /**
+     * 盤面を登録。千日手の判定に使う。
+     * [must] {@code update(MovementOfPiece, Player, Player)}宣言後に必ず使うこと
+     * @param hexStringByBoardSurface 盤面から生成したハッシュ値
+     */
+    public void updateHash(String hexStringByBoardSurface) {
+        if (!hasSafeUpdated) {
+            hashList.add(hexStringByBoardSurface);
+            hasSafeUpdated = true;
+        } else {
+            System.err.println("haven't update fully");
         }
     }
 
@@ -242,10 +277,10 @@ public class Kifu {
         return str;
     }
     public boolean isBlackTurn() {
-        return count % 2 == 0;
+        return movedNum % 2 == 0;
     }
-    public Integer getCount() {
-        return count;
+    public Integer getMovedNum() {
+        return movedNum;
     }
     private String getChineseNum(int num) {
         switch (num) {
@@ -260,5 +295,10 @@ public class Kifu {
             case 9: return "九";
             default: return "";
         }
+    }
+    public Boolean isSennnichite() {
+        if (hashList.isEmpty()) return false;
+        String hex = hashList.get(hashList.size()-1);
+        return hashList.stream().filter(str -> str.equals(hex)).count() > 3;
     }
 }

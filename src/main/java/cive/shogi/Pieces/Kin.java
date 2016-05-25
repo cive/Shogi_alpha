@@ -15,10 +15,18 @@ public class Kin extends Piece {
     public String getName() {
         return "金";
     }
+    @Override
+    public String getName(Boolean in_English) {
+        if (in_English) {
+            return "KI";
+        } else {
+            return getName();
+        }
+    }
 
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
-        Set<Point> set = new HashSet<Point>();
+        Set<Point> set = new HashSet<>();
         if(player_type == Player.AHEAD) {
             set.add(new Point(-1, -1));
             set.add(new Point( 0, -1));

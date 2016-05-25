@@ -17,6 +17,14 @@ public class Tokin extends Piece{
     public String getName() {
         return "と";
     }
+    @Override
+    public String getName(Boolean in_English) {
+        if (in_English) {
+            return "TO";
+        } else {
+            return getName();
+        }
+    }
 
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
