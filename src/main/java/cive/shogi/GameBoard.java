@@ -9,8 +9,12 @@ import cive.shogi.Pieces.*;
 import cive.shogi.Players.AheadPlayer;
 import cive.shogi.Players.BehindPlayer;
 import cive.shogi.Players.Player;
+import org.apache.commons.codec.binary.Hex;
 
 import java.awt.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.CallableStatement;
 import java.util.*;
 
 public class GameBoard {
@@ -97,15 +101,19 @@ public class GameBoard {
     	if(wouldMoveNextLater(piece,dst) && !selected_will_be_niFu(piece, dst.x) && !isTherePieceAt(dst)){
 
             // 棋譜の登録
-            Piece src_piece = new PieceFactory().create(Piece.NONE, new Point(-1, -1));
-            Piece dst_piece = new PieceFactory().create(piece.getTypeOfPiece(), dst);
-            dst_piece.setPoint(dst);
-            kifu.update(new MovementOfPiece(src_piece, dst_piece), attacker, defender);
+            if (opt) {
+                Piece src_piece = new PieceFactory().create(Piece.NONE, new Point(-1, -1));
+                Piece dst_piece = new PieceFactory().create(piece.getTypeOfPiece(), dst);
+                dst_piece.setPoint(dst);
+                kifu.update(new MovementOfPiece(src_piece, dst_piece), attacker, defender);
+            }
 
             attacker.reducePieceInHandThatIs(piece);
     		// 持ち駒を置く
             piece.setPoint(dst);
             attacker.addPiecesOnBoard(piece);
+
+            if (opt) kifu.updateHash(getHash());
 
     		this.nextTurn();
     	}
@@ -140,6 +148,9 @@ public class GameBoard {
                     attacker.addPiecesInHand(dst_piece);
             }
             attacker.addPiecesOnBoard(src_piece);
+
+            if (opt) kifu.updateHash(getHash());
+
             this.nextTurn();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -181,6 +192,9 @@ public class GameBoard {
                     attacker.addPiecesInHand(dst_piece);
             }
             attacker.addPiecesOnBoard(src_piece.getPromotePiece());
+
+            if (opt) kifu.updateHash(getHash());
+
             this.nextTurn();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -198,7 +212,7 @@ public class GameBoard {
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceArrayList();
+        ArrayList<MovementOfPiece> list = kifu.getMovementOfPieceList();
         if (num > list.size()) return;
         try {
             for (int i = 0; i < num; i++) {
@@ -252,12 +266,52 @@ public class GameBoard {
                 Player player;
                 if (attacker.getPieceTypeOnBoardAt(new Point(x, y)) > 0) player = attacker;
                 else player = defender;
-                System.out.print(player.getPieceOnBoardAt(new Point(x,y)).getName());
+                String str = "";
+                Boolean existPiece = player.getPieceTypeOnBoardAt(new Point(x,y)) != Piece.NONE;
+                if (player instanceof AheadPlayer && existPiece) str += "+";
+                else if (player instanceof BehindPlayer && existPiece) str += "-";
+                if (!existPiece) str += "_";
+                System.out.print(str+player.getPieceOnBoardAt(new Point(x,y)).getName());
             }
             System.out.println();
         }
     }
     public ArrayList<MovementOfPiece> getKifuList() {
-        return kifu.getMovementOfPieceArrayList();
+        return kifu.getMovementOfPieceList();
     }
+    private String getHash() {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        if (md != null) {
+            md.update(this.getBoardSurface().getBytes());
+        } else {
+            System.err.println("ハッシュ値が取得できません");
+            throw new NullPointerException();
+        }
+        return Hex.encodeHexString(md.digest());
+    }
+    public String getBoardSurface() {
+        String ret = "";
+        for(int y = 0; y < 9; y++) {
+            ret += "P" + (y+1);
+            for(int x = 0; x < 9; x++) {
+                Player player;
+                if (attacker.getPieceTypeOnBoardAt(new Point(x, y)) > 0) player = attacker;
+                else player = defender;
+                Boolean existPiece = player.getPieceTypeOnBoardAt(new Point(x,y)) != Piece.NONE;
+                if (player instanceof AheadPlayer && existPiece) ret += "+";
+                else if (player instanceof BehindPlayer && existPiece) ret += "-";
+                if (!existPiece) ret += " * ";
+                else ret += player.getPieceOnBoardAt(new Point(x,y)).getName(true);
+            }
+            if (y != 8) ret += "\n";
+        }
+        return ret;
+    }
+
+
 }

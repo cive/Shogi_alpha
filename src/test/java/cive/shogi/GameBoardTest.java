@@ -3,6 +3,7 @@ package cive.shogi;
 import cive.shogi.Pieces.EmptyPiece;
 import cive.shogi.Pieces.Piece;
 import cive.shogi.Players.Player;
+import org.ietf.jgss.GSSManager;
 import org.junit.Test;
 
 import java.awt.*;
@@ -109,5 +110,20 @@ public class GameBoardTest {
         gameBoard.replaceAt(1);
         gameBoard.replacePiece(new Point(2,2), new Point(2,3));
         assertFalse(gameBoard.getKifuList().size() == 2);
+    }
+    @Test
+    public void 盤面を取得() {
+        GameBoard gb = new GameBoard();
+        String str = "P1-KY-KE-GI-KI-OU-KI-GI-KE-KY\n" +
+                "P2 * -HI *  *  *  *  * -KA * \n" +
+                "P3-FU-FU-FU-FU-FU-FU-FU-FU-FU\n" +
+                "P4 *  *  *  *  *  *  *  *  * \n" +
+                "P5 *  *  *  *  *  *  *  *  * \n" +
+                "P6 *  *  *  *  *  *  *  *  * \n" +
+                "P7+FU+FU+FU+FU+FU+FU+FU+FU+FU\n" +
+                "P8 * +KA *  *  *  *  * +HI * \n" +
+                "P9+KY+KE+GI+KI+OU+KI+GI+KE+KY";
+        System.out.println(gb.getBoardSurface());
+        assertTrue(gb.getBoardSurface().equals(str));
     }
 }

@@ -17,6 +17,14 @@ public class Kyosha extends Piece{
     public String getName() {
         return "香";
     }
+    @Override
+    public String getName(Boolean in_English) {
+        if (in_English) {
+            return "KY";
+        } else {
+            return getName();
+        }
+    }
 
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {

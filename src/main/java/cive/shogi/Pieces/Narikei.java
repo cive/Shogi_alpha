@@ -17,6 +17,14 @@ public class Narikei extends Piece{
     public String getName() {
         return "圭";
     }
+    @Override
+    public String getName(Boolean in_English) {
+        if (in_English) {
+            return "NK";
+        } else {
+            return getName();
+        }
+    }
 
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {

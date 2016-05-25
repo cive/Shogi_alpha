@@ -15,6 +15,14 @@ public class Keima extends Piece {
     public String getName() {
         return "桂";
     }
+    @Override
+    public String getName(Boolean in_English) {
+        if (in_English) {
+            return "KE";
+        } else {
+            return getName();
+        }
+    }
 
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
