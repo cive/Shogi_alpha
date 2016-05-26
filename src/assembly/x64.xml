@@ -1,0 +1,18 @@
+<assembly>
+    <id>x64</id>  <!-- ここだけ変更 -->
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <unpack>true</unpack>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>src/main/assembly</directory>
+        </fileSet>
+    </fileSets>
+</assembly>

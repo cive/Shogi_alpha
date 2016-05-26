@@ -24,9 +24,8 @@ java cive.shogi.AppMain
  - Maven version 3.2.1
 
 ```console:maven
-mvn install
-mvn compile
-java -cp target/classes cive.shogi.AppMain
+mvn package
+java -jar ShogiAlpha-0.1-x64.jar
 ```
 
 ## お借りした素材を置いている方のリンク
