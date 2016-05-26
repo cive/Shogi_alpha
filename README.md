@@ -8,19 +8,26 @@ Shogi_alpha [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=m
 
 ##使い方##
 
-とりあえず，将棋盤のコマを移動させるだけのプログラムは書きましたので，それだけで遊べるという方は，ぜひどうぞ(ぇ
+- Debian系
 
-```console:sample
-mkdir out
-cd src
-javac -d ../out cive/shogi/AppMain.java
-cd ../
-mkdir out/resources
-cp -r src/resources out/resources
-cd out
-java cive.shogi.AppMain
+```console:inst-deb
+sudo apt-get update
+sudo apt-get install maven
 ```
-## Mavenで管理するようにしました
+
+- RedHat系
+
+```console:inst-red
+sudo wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sudo sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+sudo yum install -y apache-maven
+mvn --version
+```
+
+- Windows
+ - http://weblabo.oscasierra.net/install-maven-32-windows/
+
+### 実行ファイル生成と実行
  - Maven version 3.2.1
 
 ```console:maven
