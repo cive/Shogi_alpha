@@ -48,7 +48,6 @@ public class Kyosha extends Piece {
         int ini = player_type == Player.AHEAD ? -1 : 1;
         for(int i = ini;  Math.abs(i) < 9;i += ini) {
             Point target = new Point(this.getPoint().x, this.getPoint().y+i);
-            System.out.println("target: " + target.x + " " + target.y);
             if(GameBoard.isInGrid(target)) {
                 if (attacker.getPieceTypeOnBoardAt(target) > 0) {
                     break;

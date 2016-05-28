@@ -1,8 +1,10 @@
 package com.github.cive.shogi;
 
+import com.github.cive.shogi.Exceptions.PlayerNotDefinedGyokuException;
 import com.github.cive.shogi.Pieces.EmptyPiece;
 import com.github.cive.shogi.GameBoard;
 import com.github.cive.shogi.Pieces.Piece;
+import com.github.cive.shogi.Pieces.PieceFactory;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 
@@ -41,12 +43,12 @@ public class GameBoardTest {
         assertTrue(gameBoard.getAttacker().getPieceOnBoardAt(new Point(6,6)).getCapablePutPoint(
                 gameBoard.getAttacker(), gameBoard.getDefender()
         ).size() > 0);
-        assertTrue(gameBoard.canPlaceInside(new Point(6,6), new Point(6,5)));
-        assertFalse(gameBoard.canPlaceInside(new Point(7,1), new Point(6,2)));
-        assertFalse(gameBoard.canPlaceInside(new Point(7,7), new Point(7,5)));
-        assertFalse(gameBoard.canPlaceInside(new Point(1,7), new Point(3,5)));
+        assertTrue(gameBoard.canPlaceInside(new Point(6, 6), new Point(6, 5)));
+        assertFalse(gameBoard.canPlaceInside(new Point(7, 1), new Point(6, 2)));
+        assertFalse(gameBoard.canPlaceInside(new Point(7, 7), new Point(7, 5)));
+        assertFalse(gameBoard.canPlaceInside(new Point(1, 7), new Point(3, 5)));
         gameBoard.replacePiece(new Point(6,6), new Point(6,5));
-        assertTrue(gameBoard.canPlaceInside(new Point(2,0), new Point(3,1)));
+        assertTrue(gameBoard.canPlaceInside(new Point(2, 0), new Point(3, 1)));
     }
 
     @Test
@@ -152,5 +154,23 @@ public class GameBoardTest {
         }
         System.out.println(Hex.encodeHexString(md.digest()));
         assertTrue(Hex.encodeHexString(md.digest()).length()>0);
+    }
+    @Test
+    public void 王手の判定() {
+        GameBoard gb = new GameBoard();
+        gb.replacePiece(new Point(2, 6), new Point(2, 5));
+        gb.replacePiece(new Point(6, 2), new Point(6, 3));
+        gb.replacePieceWithPromote(new Point(1, 7), new Point(7, 1));
+        gb.replacePiece(new Point(6, 0), new Point(7, 1));
+        gb.placePieceInHand(gb.getAttacker().getPiecesInHand().stream()
+                    .filter(x->x.getTypeOfPiece() == Piece.KAKU)
+                    .findFirst()
+                    .get()
+                , new Point(8, 4));
+        try {
+            assertTrue(gb.isMated());
+        } catch (PlayerNotDefinedGyokuException e) {
+            e.printStackTrace();
+        }
     }
 }
