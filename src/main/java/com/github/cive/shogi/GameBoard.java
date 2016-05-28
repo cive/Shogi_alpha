@@ -5,6 +5,7 @@
 
 package com.github.cive.shogi;
 
+import com.github.cive.shogi.Exceptions.PlayerNotDefinedGyokuException;
 import com.github.cive.shogi.Pieces.EmptyPiece;
 import com.github.cive.shogi.Pieces.Piece;
 import com.github.cive.shogi.Pieces.PieceFactory;
@@ -16,6 +17,7 @@ import java.awt.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
@@ -43,7 +45,7 @@ public class GameBoard {
         kifu.setInitialPlayers(playerA, playerB);
         setTurn(true);
     }
-    public void initGame(int rule) {
+    private void initGame(int rule) {
         playerA = new AheadPlayer(rule);
         playerB = new BehindPlayer();
         kifu = new Kifu();
@@ -61,7 +63,7 @@ public class GameBoard {
         return point.x >= 0 && point.x < 9
                 && point.y >= 0 && point.y < 9;
     }
-    public void setTurn(boolean aheadsTurn) {
+    private void setTurn(boolean aheadsTurn) {
         if(aheadsTurn) {
             this.attacker = playerA;
             this.defender = playerB;
@@ -82,6 +84,11 @@ public class GameBoard {
             this.attacker = playerB;
             this.defender = playerA;
         }
+        try {
+            if (isMated()) System.out.println("Mate");
+        } catch (PlayerNotDefinedGyokuException e) {
+            e.printStackTrace();
+        }
     }
     public Player getAttacker() {
         return attacker;
@@ -89,16 +96,16 @@ public class GameBoard {
     public Player getDefender() {
         return defender;
     }
-    public boolean canPlaceInside(Point src, Point dst) {
+    public Boolean canPlaceInside(Point src, Point dst) {
         Piece p = attacker.getPieceOnBoardAt(src);
         if (p.getTypeOfPiece() == Piece.NONE) return false;
         Set<Point> s = p.getCapablePutPoint(attacker, defender);
         return s.size() != 0 && s.contains(dst);
     }
-    public boolean isTherePieceAt(Point p) {
+    public Boolean isTherePieceAt(Point p) {
         return attacker.getPieceTypeOnBoardAt(p) + defender.getPieceTypeOnBoardAt(p) > 0;
     }
-    public void placePieceInHand(Piece piece, Point dst, Boolean opt){
+    private void placePieceInHand(Piece piece, Point dst, Boolean opt){
     	// 持ち駒を置けるなら置いて，交代
     	if(wouldMoveNextLater(piece,dst) && !selected_will_be_niFu(piece, dst.x) && !isTherePieceAt(dst)){
 
@@ -125,7 +132,7 @@ public class GameBoard {
         placePieceInHand(piece, dst, true);
     }
 
-    public void replacePiece(Point src, Point dst, Boolean opt) {
+    private void replacePiece(Point src, Point dst, Boolean opt) {
         Piece src_piece;
         Piece dst_piece;
         try {
@@ -169,7 +176,7 @@ public class GameBoard {
      * @param dst 移動先
      * @param opt 棋譜に登録するなら{@code true}
      */
-    public void replacePieceWithPromote(Point src, Point dst, Boolean opt) {
+    private void replacePieceWithPromote(Point src, Point dst, Boolean opt) {
         Piece src_piece;
         Piece dst_piece;
         try {
@@ -250,7 +257,7 @@ public class GameBoard {
     	return ret;
     }
     // 与えられた位置が動かせる位置ならtrue
-    public Boolean wouldMoveNextLater(Piece selected_piece, Point dst) {
+    private Boolean wouldMoveNextLater(Piece selected_piece, Point dst) {
         Piece p = null;
         try {
             p = selected_piece.clone();
@@ -316,5 +323,20 @@ public class GameBoard {
         return ret;
     }
 
-
+    /**
+     * 敵が王手を仕掛けて来ていたら王手されていると判断する
+     * @return 王手されているならば{@code true}
+     */
+    @org.jetbrains.annotations.NotNull
+    public Boolean isMated() throws PlayerNotDefinedGyokuException {
+        // とりあえずの実装
+        // より早く判定するには、玉の周りの駒と飛車角行を調べればよい
+        Point ptGyoku = attacker.getPiecesOnBoard(Piece.GYOKU)
+                .findFirst()
+                .orElseThrow(PlayerNotDefinedGyokuException::new)
+                .getPoint();
+        Set<Point> set = new HashSet();
+        defender.getPiecesOnBoard().stream().forEach(x -> set.addAll(x.getCapablePutPoint(defender,attacker)));
+        return set.stream().anyMatch(x -> x.equals(ptGyoku));
+    }
 }
