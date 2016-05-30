@@ -85,7 +85,7 @@ public class GameBoard {
             this.defender = playerA;
         }
         try {
-            if (isMated()) System.out.println("Mate");
+            if (isMated()) System.out.println("Mated");
         } catch (PlayerNotDefinedGyokuException e) {
             e.printStackTrace();
         }
@@ -133,30 +133,17 @@ public class GameBoard {
     }
 
     private void replacePiece(Point src, Point dst, Boolean opt) {
-        Piece src_piece;
-        Piece dst_piece;
         try {
-            src_piece = attacker.getPieceOnBoardAt(src).clone();
 
             // 棋譜の登録
             if (opt) {
-                Piece dst_piece_for_kifu = src_piece.clone();
+                Piece src_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
+                Piece dst_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
                 dst_piece_for_kifu.setPoint(dst);
-                kifu.update(new MovementOfPiece(src_piece, dst_piece_for_kifu), attacker, defender);
+                kifu.update(new MovementOfPiece(src_piece_for_kifu, dst_piece_for_kifu), attacker, defender);
             }
 
-            attacker.reducePieceOnBoardAt(src);
-            src_piece.setPoint(dst);
-            if(defender.getPieceTypeOnBoardAt(dst) > 0) {
-                dst_piece = defender.getPieceOnBoardAt(dst).clone();
-                defender.reducePieceOnBoardAt(dst);
-                dst_piece.setPoint(new Point(-1,-1));
-                if(dst_piece.getTypeOfPiece() > Piece.GYOKU)
-                    attacker.addPiecesInHand(dst_piece.getDemotePiece());
-                else
-                    attacker.addPiecesInHand(dst_piece);
-            }
-            attacker.addPiecesOnBoard(src_piece);
+            replace(src, dst, attacker, defender, false);
 
             if (opt) kifu.updateHash(getHash());
 
@@ -177,30 +164,17 @@ public class GameBoard {
      * @param opt 棋譜に登録するなら{@code true}
      */
     private void replacePieceWithPromote(Point src, Point dst, Boolean opt) {
-        Piece src_piece;
-        Piece dst_piece;
         try {
-            src_piece = attacker.getPieceOnBoardAt(src).clone();
-
             // 棋譜の登録
             if (opt) {
-                Piece dst_piece_for_kifu = src_piece.clone();
+                Piece src_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
+                Piece dst_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
                 dst_piece_for_kifu.setPoint(dst);
-                kifu.update(new MovementOfPiece(src_piece, dst_piece_for_kifu.getPromotePiece()), attacker, defender);
+                kifu.update(new MovementOfPiece(src_piece_for_kifu, dst_piece_for_kifu.getPromotePiece()), attacker, defender);
             }
 
-            attacker.reducePieceOnBoardAt(src);
-            src_piece.setPoint(dst);
-            if(defender.getPieceTypeOnBoardAt(dst) > 0) {
-                dst_piece = defender.getPieceOnBoardAt(dst).clone();
-                defender.reducePieceOnBoardAt(dst);
-                dst_piece.setPoint(new Point(-1,-1));
-                if(dst_piece.getTypeOfPiece() > Piece.GYOKU)
-                    attacker.addPiecesInHand(dst_piece.getDemotePiece());
-                else
-                    attacker.addPiecesInHand(dst_piece);
-            }
-            attacker.addPiecesOnBoard(src_piece.getPromotePiece());
+            // 駒の移動
+            replace(src, dst, attacker, defender, true);
 
             if (opt) kifu.updateHash(getHash());
 
@@ -238,6 +212,25 @@ public class GameBoard {
             e.printStackTrace();
         }
         kifu.undo(list.size() - num);
+    }
+
+    private void replace(Point src, Point dst, Player attacker, Player defender, Boolean willPromote) throws CloneNotSupportedException{
+        Piece src_piece = attacker.getPieceOnBoardAt(src).clone();
+        attacker.reducePieceOnBoardAt(src);
+        src_piece.setPoint(dst);
+        if(defender.getPieceTypeOnBoardAt(dst) > 0) {
+            Piece dst_piece = defender.getPieceOnBoardAt(dst).clone();
+            defender.reducePieceOnBoardAt(dst);
+            dst_piece.setPoint(new Point(-1,-1));
+            if(dst_piece.getTypeOfPiece() > Piece.GYOKU)
+                attacker.addPiecesInHand(dst_piece.getDemotePiece());
+            else
+                attacker.addPiecesInHand(dst_piece);
+        }
+        if (willPromote)
+            attacker.addPiecesOnBoard(src_piece.getPromotePiece());
+        else
+            attacker.addPiecesOnBoard(src_piece);
     }
 
     // 与えられた位置が含まれる列に，既に歩があればtrue
@@ -335,8 +328,78 @@ public class GameBoard {
                 .findFirst()
                 .orElseThrow(PlayerNotDefinedGyokuException::new)
                 .getPoint();
-        Set<Point> set = new HashSet();
+        Set<Point> set = new HashSet<>();
         defender.getPiecesOnBoard().stream().forEach(x -> set.addAll(x.getCapablePutPoint(defender,attacker)));
         return set.stream().anyMatch(x -> x.equals(ptGyoku));
+    }
+
+    /**
+     * 投了判定
+     * 王手されているときに判定する
+     * @return これ以上指す手がない場合{@code true}
+     */
+    public Boolean isCheckmated() throws PlayerNotDefinedGyokuException {
+        // 王手されている前提
+        // 攻撃側の玉を動かしたとしてもisMatedだった場合、投了の可能性があるので
+        // 何かはれる可能性がないか調べる
+        Player att = null, def = null;
+        try {
+            att = attacker.clone();
+            def = defender.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        Set<Point> set = new HashSet<>();
+        Point ptGyoku;
+        if (att != null && def != null) {
+            ptGyoku = att.getPiecesOnBoard(Piece.GYOKU)
+                    .findAny()
+                    .orElseThrow(PlayerNotDefinedGyokuException::new)
+                    .getPoint();
+            set.addAll(att.getPieceOnBoardAt(ptGyoku).getCapablePutPoint(att,def));
+        } else {
+            System.err.println("読み込みエラー");
+            throw new NullPointerException();
+        }
+        // まず、玉を他の位置に移動して王手が防げるか判定する
+        for (Point c : set) {
+            Player a = null, d = null;
+            try {
+                a = att.clone();
+                d = def.clone();
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+
+            if (a != null && d != null) {
+                try {
+                    replace(ptGyoku, c, a, d, false);
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (!isMated()) return false;
+        }
+        // もし、玉の周りの駒を移動させることで王手を防げるのなら詰みではない
+
+
+
+        // replace系メソッドが仮のatt,defでも実行できるなら、このメソッドが書きやすい
+        // ほかに方法がないか？→ここで玉の場所を移動させる？
+        return true;
+    }
+
+    /**
+     * 終局判定
+     * @return 終局であれば{@code true}
+     */
+    public Boolean isConclusion() {
+        if (kifu.isSennnichite()) return true;
+        try {
+            if (isMated() && isCheckmated()) return true;
+        } catch (PlayerNotDefinedGyokuException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
