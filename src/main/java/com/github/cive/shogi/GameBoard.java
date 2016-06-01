@@ -17,6 +17,7 @@ import java.awt.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
@@ -84,11 +85,7 @@ public class GameBoard {
             this.attacker = playerB;
             this.defender = playerA;
         }
-        try {
-            if (isMated()) System.out.println("Mated");
-        } catch (PlayerNotDefinedGyokuException e) {
-            e.printStackTrace();
-        }
+        isConclusion();
     }
     public Player getAttacker() {
         return attacker;
@@ -321,7 +318,7 @@ public class GameBoard {
      * @return 王手されているならば{@code true}
      */
     @org.jetbrains.annotations.NotNull
-    public Boolean isMated() throws PlayerNotDefinedGyokuException {
+    private Boolean isMated(Player attacker, Player defender) throws PlayerNotDefinedGyokuException {
         // とりあえずの実装
         // より早く判定するには、玉の周りの駒と飛車角行を調べればよい
         Point ptGyoku = attacker.getPiecesOnBoard(Piece.GYOKU)
@@ -333,36 +330,45 @@ public class GameBoard {
         return set.stream().anyMatch(x -> x.equals(ptGyoku));
     }
 
+    public Boolean isMated() throws PlayerNotDefinedGyokuException {
+        return isMated(this.attacker, this.defender);
+    }
+
     /**
      * 投了判定
      * 王手されているときに判定する
+     * 計算量は多め
      * @return これ以上指す手がない場合{@code true}
      */
     public Boolean isCheckmated() throws PlayerNotDefinedGyokuException {
         // 王手されている前提
         // 攻撃側の玉を動かしたとしてもisMatedだった場合、投了の可能性があるので
         // 何かはれる可能性がないか調べる
-        Player att = null, def = null;
+        Player cAtt = null, cDef = null;
         try {
-            att = attacker.clone();
-            def = defender.clone();
+            cAtt = attacker.clone();
+            cDef = defender.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        Set<Point> set = new HashSet<>();
+        final Player att = cAtt;
+        final Player def = cDef;
+        List<Piece> pieces_in_hand = new ArrayList<>();
+        pieces_in_hand.addAll(attacker.getPiecesInHand());
+        Set<Point> points_of_capable_moving_of_gyoku = new HashSet<>();
         Point ptGyoku;
         if (att != null && def != null) {
             ptGyoku = att.getPiecesOnBoard(Piece.GYOKU)
                     .findAny()
                     .orElseThrow(PlayerNotDefinedGyokuException::new)
                     .getPoint();
-            set.addAll(att.getPieceOnBoardAt(ptGyoku).getCapablePutPoint(att,def));
+            points_of_capable_moving_of_gyoku.addAll(att.getPieceOnBoardAt(ptGyoku).getCapablePutPoint(att,def));
         } else {
             System.err.println("読み込みエラー");
             throw new NullPointerException();
         }
         // まず、玉を他の位置に移動して王手が防げるか判定する
-        for (Point c : set) {
+        for (Point c : points_of_capable_moving_of_gyoku) {
             Player a = null, d = null;
             try {
                 a = att.clone();
@@ -378,14 +384,55 @@ public class GameBoard {
                     e.printStackTrace();
                 }
             }
-            if (!isMated()) return false;
+            if (!isMated(a, d)) return false;
+        }
+
+        // もし、駒を持っていて指すことで王手を防げるのなら詰みではない
+        if(!def.getPiecesInHand().isEmpty()) for (Point c : points_of_capable_moving_of_gyoku) {
+            Player a = null, d = null;
+            try {
+                a = att.clone();
+                d = def.clone();
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+
+            if (a != null && d != null) {
+                for (Piece piece : pieces_in_hand) {
+                    if ( !selected_will_be_niFu(piece, c.x)) {
+                        piece.setPoint(c);
+                        a.addPiecesOnBoard(piece);
+                        if (!isMated(a, d)) return false;
+                    }
+                }
+            }
         }
         // もし、玉の周りの駒を移動させることで王手を防げるのなら詰みではない
+        Set<Piece> set = new HashSet<>();
+        att.getPiecesOnBoard().stream().forEach(x -> set.add(x));
+        for (Piece piece : set) {
+            Point src = piece.getPoint();
+            Set<Point> points = new HashSet<>();
+            points.addAll(piece.getCapablePutPoint(att, def));
+            for (Point dest : points) {
+                Player a = null, d = null;
+                try {
+                    a = att.clone();
+                    d = def.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
 
-
-
-        // replace系メソッドが仮のatt,defでも実行できるなら、このメソッドが書きやすい
-        // ほかに方法がないか？→ここで玉の場所を移動させる？
+                if (a != null && d != null) {
+                    try {
+                        replace(src, dest, a, d, false);
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (!isMated(a, d)) return false;
+            }
+        }
         return true;
     }
 
@@ -396,7 +443,13 @@ public class GameBoard {
     public Boolean isConclusion() {
         if (kifu.isSennnichite()) return true;
         try {
-            if (isMated() && isCheckmated()) return true;
+            if (isMated()) {
+                System.out.println("Mate");
+                if (isCheckmated()) {
+                    System.out.println("Checkmate");
+                    return true;
+                }
+            }
         } catch (PlayerNotDefinedGyokuException e) {
             e.printStackTrace();
         }
