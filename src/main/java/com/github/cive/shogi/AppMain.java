@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 public class AppMain extends JFrame implements ActionListener {
 
     private ShogiBoardComponent pane;
+    private GameBoard gameBoard;
     Timer timer;
     public static void main(String[] args) {
         AppMain frame = new AppMain();
@@ -35,7 +36,9 @@ public class AppMain extends JFrame implements ActionListener {
         setLayout(new BorderLayout());
 
         setJMenuBar(initMenuBar());
+        gameBoard = new GameBoard();
         pane = new ShogiBoardComponent();
+        pane.setGameBoard(gameBoard);
         add(pane, BorderLayout.CENTER);
         pane.setSizeOfBoard();
         pack();
@@ -65,7 +68,7 @@ public class AppMain extends JFrame implements ActionListener {
         menuInit.setText("最初から(I)");
         menuInit.setMnemonic(KeyEvent.VK_I);
         menuInit.addActionListener(e -> {
-            pane.getGameBoard().initGame();
+            gameBoard.initGame();
             pane.repaint();
         });
         tool.add(menuInit);
@@ -77,6 +80,6 @@ public class AppMain extends JFrame implements ActionListener {
         return menuBar;
     }
     public void actionPerformed(ActionEvent e){
-        this.setTitle("twitter将棋(alpha ver.) : " + (pane.getGameBoard().isAheadsTurn()?"先手":"後手") + "の手番です．");
+        this.setTitle("twitter将棋(alpha ver.) : " + (gameBoard.isAheadsTurn()?"先手":"後手") + "の手番です．");
     }
 }

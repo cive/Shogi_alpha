@@ -247,7 +247,7 @@ public class GameBoard {
     	return ret;
     }
     // 与えられた位置が動かせる位置ならtrue
-    private Boolean wouldMoveNextLater(Piece selected_piece, Point dst) {
+    public Boolean wouldMoveNextLater(Piece selected_piece, Point dst) {
         Piece p = null;
         try {
             p = selected_piece.clone();
@@ -408,9 +408,7 @@ public class GameBoard {
             }
         }
         // もし、玉の周りの駒を移動させることで王手を防げるのなら詰みではない
-        Set<Piece> set = new HashSet<>();
-        att.getPiecesOnBoard().stream().forEach(x -> set.add(x));
-        for (Piece piece : set) {
+        for (Piece piece : att.getPiecesOnBoard()) {
             Point src = piece.getPoint();
             Set<Point> points = new HashSet<>();
             points.addAll(piece.getCapablePutPoint(att, def));

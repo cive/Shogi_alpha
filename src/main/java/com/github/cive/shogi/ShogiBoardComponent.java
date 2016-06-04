@@ -31,110 +31,36 @@ public class ShogiBoardComponent extends JComponent{
     private BufferedImage Pieces_Img[][] = new BufferedImage[2][14];
     private Point selected_point = new Point(-1,-1);
     private Piece selected_piece_in_hand;
+    private ShogiBoardController controller;
     public ShogiBoardComponent() {
-        gameBoard = new GameBoard();
+        controller = new ShogiBoardController();
         selected_piece_in_hand = new EmptyPiece();
         loadImages();
 
         enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
         addMouseListener(new MouseAdapter() {
            public void mouseClicked(MouseEvent e) {
-               selectPieceAt(e.getPoint());
+               controller.selectPieceAt(e.getPoint());
+               repaint();
            }
         });
     }
-    private Integer getTypeOfPieceInHand(Point clicked, Point offset) {
-        boolean judge;
-        judge = clicked.x >= offset.x && clicked.x <= (offset.x+150) &&
-                clicked.y >= offset.y && clicked.y <= (offset.y+50);
-        if(judge)return Piece.FU;
-        for(int type = 2; type < 8; type+=2) {
-            judge = clicked.x >= offset.x    && clicked.x <= (offset.x+75) &&
-                    clicked.y >= offset.y+type*25 && clicked.y <= (offset.y+50+type*25);
-            if(judge)return type;
-            judge=clicked.x >= (offset.x+75)    && clicked.x <= (offset.x+150) &&
-                    clicked.y >= offset.y+type*25 && clicked.y <= (offset.y+50+type*25);
-            if(judge)return type+1;
-        }
-        return Piece.NONE;
+    public void setGameBoard(GameBoard gameBoard) {
+        this.gameBoard = gameBoard;
+        controller.setGameBoard(gameBoard);
     }
-    public void selectPieceAt(Point clicked) {
-    	// 盤上の選択
-        boolean onBoard = clicked.x >= OFFSET.x && clicked.x <= (OFFSET.x+50*9) && clicked.y >= OFFSET.y && clicked.y <= (OFFSET.y+50*9);
-
-        // 持ち駒を選択中
-        boolean haveSelectedInHand = selected_piece_in_hand.getTypeOfPiece() != Piece.NONE;
-
-        if(onBoard) {
-            Point clicked_on_board = new Point((int) ((clicked.x - OFFSET.x) / 50), (int) ((clicked.y - OFFSET.y) / 50));
-            // 既に盤上を選択していた時
-            boolean haveSelectedOnBoard = getSelected_point().x != -1;
-
-            if (haveSelectedInHand) {
-        		// 持ち駒を置く．
-        		gameBoard.placePieceInHand(selected_piece_in_hand, clicked_on_board);
-
-        		// 選択解除
-        		selected_piece_in_hand = new EmptyPiece();
-            } else if (haveSelectedOnBoard) {
-                if (gameBoard.canPlaceInside(getSelected_point(), clicked_on_board)) {
-	            // なり駒するかの判定
-		            if(gameBoard.getAttacker().getPieceOnBoardAt(getSelected_point()).canPromote(clicked_on_board, gameBoard.isAheadsTurn())) {
-                        System.out.println("can promote");
-			            Object[] options = {"はい", "いいえ", "キャンセル"};
-			            int reply = JOptionPane.showOptionDialog(null, "成りますか？", "成駒", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
-                        if(reply == JOptionPane.YES_OPTION) {
-				            gameBoard.replacePieceWithPromote(getSelected_point(), clicked_on_board);
-				            setSelected_point(new Point(-1, -1));
-			            } else if(reply == JOptionPane.NO_OPTION) {
-				            gameBoard.replacePiece(getSelected_point(), clicked_on_board);
-				            setSelected_point(new Point(-1, -1));
-			            } else {
-                            setSelected_point(new Point(-1, -1));
-                        }
-		            } else {
-                        gameBoard.replacePiece(getSelected_point(), clicked_on_board);
-			            setSelected_point(new Point(-1, -1));
-		            }
-                } else {
-                    setSelected_point(clicked_on_board);
-		        }
-            } else {
-                setSelected_point(clicked_on_board);
-            }
-        }  else if (!onBoard) {
-            // 持ち駒の処理
-        	if (haveSelectedInHand) {
-        		// 選択解除
-        		selected_piece_in_hand = new EmptyPiece();
-        	} else {
-                int type_of_selected_in_hand;
-                if (gameBoard.getAttacker() instanceof AheadPlayer)
-                    type_of_selected_in_hand = getTypeOfPieceInHand(clicked, AHEAD_OFFSET);
-                else
-                    type_of_selected_in_hand = getTypeOfPieceInHand(clicked, BEHIND_OFFSET);
-                boolean couldSelect = false;
-                for (Piece piece : gameBoard.getAttacker().getPiecesInHand()) {
-                    if(piece.getTypeOfPiece() == type_of_selected_in_hand) {
-                        couldSelect = true;
-                        setSelected_piece_in_hand(piece);
-                        break;
-                    }
-                }
-                if(!couldSelect) selected_piece_in_hand = new EmptyPiece();
-        	}
-            setSelected_point(new Point(-1, -1));
-        }
-        // TODO: clear print 4 debug.
-        System.out.println(selected_point);
-        repaint();
-    }
-    public String pad(int n) {
+    private String pad(int n) {
         if (n < 10) return "0" + n;
         else return String.valueOf(n);
     }
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+        selected_point = controller.getSelected_point();
+        try {
+            selected_piece_in_hand = controller.getSelected_piece_in_hand();
+        } catch (CloneNotSupportedException e ) {
+            e.printStackTrace();
+        }
         // 将棋盤をoffShogi_imgにdraw.
         offShogi_Img.drawImage(ShogiBoard_Img, 0, 0, 802, 500, this);
         paintPiecesOnBoard(g2, gameBoard.getAttacker());
@@ -230,13 +156,13 @@ public class ShogiBoardComponent extends JComponent{
                 continue;
             }
             for(int y = 0; y < 9; y++) {
-                if (gameBoard.isTherePieceAt(new Point(x, y))){
+                Point dest = new Point(x, y);
+                if (gameBoard.isTherePieceAt(dest) || !gameBoard.wouldMoveNextLater(sel, dest)){
                     continue;
                 }
-                Point p = new Point(x, y);
                 Rectangle capable_rect = new Rectangle(
-                        OFFSET.x + GRID * p.x,
-                        OFFSET.y + GRID * p.y,
+                        OFFSET.x + GRID * dest.x,
+                        OFFSET.y + GRID * dest.y,
                         48,
                         48
                 );
@@ -316,20 +242,5 @@ public class ShogiBoardComponent extends JComponent{
         Dimension dim = new Dimension(802, 500);
         setMinimumSize(dim);
         setPreferredSize(dim);
-    }
-    public void setSelected_point(Point p) {
-        this.selected_point = p;
-    }
-    public Point getSelected_point() {
-        return this.selected_point;
-    }
-    public GameBoard getGameBoard() {
-        return gameBoard;
-    }
-    public void setSelected_piece_in_hand(Piece selected_piece_in_hand) {
-        this.selected_piece_in_hand = selected_piece_in_hand;
-    }
-    public Piece getSelected_piece_in_hand() {
-        return selected_piece_in_hand;
     }
 }
