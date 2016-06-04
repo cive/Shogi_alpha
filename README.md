@@ -5,6 +5,8 @@ Shogi_alpha [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=m
 
 将棋で遊ぶためのプログラム(alpha版)です(未完成)．
 最終的には，twitterで投稿したハッシュタグ付きのツイートを読み込んで，駒を動かす位置などを取得して，動かせる...ような大人数型のゲームを考えています．
+![sample](https://github.com/cive/Shogi_alpha/blob/master/sample.png)
+
 
 ##使い方##
 
