@@ -1,4 +1,5 @@
-Shogi_alpha [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha) [![Coverage Status](https://coveralls.io/repos/github/cive/Shogi_alpha/badge.svg?branch=master)](https://coveralls.io/github/cive/Shogi_alpha?branch=master)
+Shogi_alpha [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha) [![codecov](https://codecov.io/gh/cive/Shogi_alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/cive/Shogi_alpha)
+
 ===========
 
 #どんなプログラム?#
