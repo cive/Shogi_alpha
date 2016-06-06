@@ -10,10 +10,7 @@ import java.awt.event.KeyEvent;
  * http://www.coderanch.com/t/341360/GUI/java/JMenu-JToolBar#
  * http://www.ne.jp/asahi/hishidama/home/tech/java/swing/JMenuBar.html
  * TODO LIST
- * TODO: 持ち駒の処理．
- * TODO: HIGHLIGHTさせる．
  * TODO: Click処理．→
- * TODO: 成るとか，成らないとか．
  * TODO: 王手したらエフェクト．
  * TODO: 手詰まりであれば投了エフェクト．
  * TODO: Twitter連携処理．
