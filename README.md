@@ -1,4 +1,4 @@
-Shogi_alpha [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha) [![codecov](https://codecov.io/gh/cive/Shogi_alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/cive/Shogi_alpha)
+#Shogi  [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha)   [![codecov](https://codecov.io/gh/cive/Shogi_alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/cive/Shogi_alpha)
 
 ===========
 
