@@ -3,10 +3,12 @@ package com.github.cive.shogi;
 import com.github.cive.shogi.Pieces.EmptyPiece;
 import com.github.cive.shogi.Pieces.Piece;
 import com.github.cive.shogi.Players.AheadPlayer;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+
 import java.awt.*;
 
 /**
@@ -31,8 +33,9 @@ public class ShogiBoardController {
     public void setGameBoard(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
     }
+
     public void selectPieceAt(Point clicked) {
-        // 盤上の選択
+    	// 盤上の選択
         boolean isClickedOnBoard = clicked.x >= OFFSET.x && clicked.x <= (OFFSET.x+50*9) && clicked.y >= OFFSET.y && clicked.y <= (OFFSET.y+50*9);
         // 盤上の位置
         Point clicked_position_on_board = new Point((int) ((clicked.x - OFFSET.x) / 50), (int) ((clicked.y - OFFSET.y) / 50));

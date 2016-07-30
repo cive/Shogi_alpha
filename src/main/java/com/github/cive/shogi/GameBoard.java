@@ -19,7 +19,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Stream;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
+//import jdk.internal.util.xml.impl.Pair;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
 public class GameBoard {
@@ -257,6 +260,46 @@ public class GameBoard {
         if(p == null) return false;
         p.setPoint(dst);
         return p.canMoveLater(attacker);
+    }
+    
+    // 場所を表わす文字列を座標値に変換（「5二」を表わす「52」は(4, 1)に変換）
+    private Point LocationStringToPoint(String str) {
+    	int x = Integer.parseInt(str.substring(0, 1));
+    	int y = Integer.parseInt(str.substring(1, 2));
+    	return new Point(9 - x, y - 1);
+    }
+    
+    // 文字列で駒を移動する
+    public void MoveByString(String str) {
+    	// 文字列のパターンで場合分け
+    	if (Pattern.compile("[1-9]{4}").matcher(str).matches()) {
+    		// 移動
+        	Point src = LocationStringToPoint(str.substring(0, 2));
+        	Point dst = LocationStringToPoint(str.substring(2, 4));
+    		replacePiece(src, dst);
+    	}else if (Pattern.compile("[1-9]{4}\\+").matcher(str).matches()) {
+    		// 移動して成る
+        	Point src = LocationStringToPoint(str.substring(0, 2));
+        	Point dst = LocationStringToPoint(str.substring(2, 4));
+        	replacePieceWithPromote(src, dst);
+    	}else if (Pattern.compile(".[1-9]{2}").matcher(str).matches()) {
+    		// 持ち駒を指す
+    		Map<String, Integer> nameIdPairs = new HashMap<String, Integer>() {
+    			{
+    				String[] keys = new String[] {"歩", "香", "桂", "銀", "金", "角", "飛"};
+    				int[] values = new int[] {Piece.FU, Piece.KYOSHA, Piece.KEIMA, Piece.GIN, Piece.KIN, Piece.KAKU, Piece.HISHA};
+    				for(int i = 0; i < 7; i++){
+    					put(keys[i], values[i]);
+    				}
+    			}
+    		};
+    		String nameOfHand = str.substring(0, 1);	// これから置く駒
+    		if(nameIdPairs.containsKey(nameOfHand)){
+    			int pieceId = nameIdPairs.get(nameOfHand);
+   	        	Point dst = LocationStringToPoint(str.substring(1, 3));
+   				placePieceInHand(new PieceFactory().create(pieceId, new Point(-1, -1)), dst);
+    		}
+    	}
     }
 
     public void printBoard() {

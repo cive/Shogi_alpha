@@ -3,3 +3,6 @@ out/
 Shogi_alpha.iml
 target/
 Thumbs.db
+
+/bin/
+.project
