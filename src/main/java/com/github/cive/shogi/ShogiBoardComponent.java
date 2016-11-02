@@ -40,7 +40,11 @@ public class ShogiBoardComponent extends JComponent{
         enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
         addMouseListener(new MouseAdapter() {
            public void mouseClicked(MouseEvent e) {
-               controller.selectPieceAt(e.getPoint());
+               if (controller.mode() == ShogiBoardController.BATTLE_MODE) {
+                   controller.selectPieceAt(e.getPoint());
+               } else if (controller.mode() == ShogiBoardController.VIEW_MODE) {
+
+               }
                repaint();
            }
         });
