@@ -15,12 +15,21 @@ import java.awt.*;
  * Created by rrqkd_000 on 2016/06/04.
  */
 public class ShogiBoardController {
+    final static int VIEW_MODE = 0;
+    final static int BATTLE_MODE = 1;
     private Piece selected_piece_in_hand = new EmptyPiece(new Point(-1, -1));
     private Point selected_point = new Point(-1,-1);
     private static final Point OFFSET = new Point(151 + 26, 0 + 26);
     private static final Point AHEAD_OFFSET = new Point(650,300);
     private static final Point BEHIND_OFFSET = new Point(0, 0);
     GameBoard gameBoard;
+    public Integer mode(){
+        if (gameBoard.isConclusion()) {
+            return VIEW_MODE;
+        } else {
+            return BATTLE_MODE;
+        }
+    }
     public Piece getSelected_piece_in_hand() throws CloneNotSupportedException{
         return selected_piece_in_hand.clone();
     }
