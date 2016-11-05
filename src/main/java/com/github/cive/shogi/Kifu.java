@@ -111,6 +111,7 @@ public class Kifu {
         }
         movementOfPieceList.add(mp);
         try {
+            System.out.println("info: " + getKifu(mp, movementOfPieceList.get(movementOfPieceList.size() - 1), attacker.clone(), defender.clone()));
             kifuList.add(getKifu(
                     mp
                     , movementOfPieceList.get(movementOfPieceList.size() - 1)
@@ -176,16 +177,23 @@ public class Kifu {
             e.printStackTrace();
             return "clone error";
         }
+        boolean first_time = false;
+        try {
+            first_time = now.getSrc().getTypeOfPiece().equals(prev.getSrc().getTypeOfPiece()) &&
+                    now.getDst().getTypeOfPiece().equals(prev.getDst().getTypeOfPiece());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
         final Piece src = cSrc;
         final Piece dst = cDst;
         String str = "";
         str += isBlackTurn() ? "▲" : "△";
         int trans = isBlackTurn() ? 1 : -1; /* 先手、後手座標変換用 */
         try {
-            if (prev.getDst().getPoint().equals(dst.getPoint())) {
+            if (prev.getDst().getPoint().equals(dst.getPoint()) && !first_time) {
                 str += "同";
             } else {
-                str += (10 - dst.getPoint().x + 1) + getChineseNum(dst.getPoint().y + 1);
+                str += (9 - dst.getPoint().x) + getChineseNum(dst.getPoint().y + 1);
             }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -217,11 +225,13 @@ public class Kifu {
             List<Piece> gins = new ArrayList<>(
                     Arrays.asList(
                         attacker.getPiecesOnBoard(src_type)
-                        .filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
-                        .filter(x -> !x.getPoint().equals(src.getPoint()))
+                        //.filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
+                        //.filter(x -> !x.getPoint().equals(src.getPoint()))
                         .toArray(Piece[]::new)
                     )
             );
+            System.out.println(gins.get(0).getCapablePutPoint(attacker,defender));
+            System.out.println(gins.get(1).getCapablePutPoint(attacker,defender));
             boolean there_were_gin_on_col = gins.stream().anyMatch(g -> g.getPoint().y - src.getPoint().y == 0);
             boolean top = dst.getPoint().x - src.getPoint().x == 0
                     && (dst.getPoint().y - src.getPoint().y) * trans > 0;
@@ -265,6 +275,18 @@ public class Kifu {
             }
             // TODO impl KIN(NARI*), KAKU, HISHA, UMA and RYU
         }
+
+        if (src_type == Piece.KIN) {
+            List<Piece> kins = new ArrayList<>(
+                    Arrays.asList(
+                            attacker.getPiecesOnBoard(src_type)
+                                    .filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
+                                    .filter(x -> !x.getPoint().equals(src.getPoint()))
+                                    .toArray(Piece[]::new)
+                    )
+            );
+        }
+
         // 成　または　不成
         // srcが盤上にあり、成駒できるとき
         if (src.canPromote(dst.getPoint(), isBlackTurn()) && src.isOnBoard()) {
