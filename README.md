@@ -1,15 +1,17 @@
-#Shogi  [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha)   [![codecov](https://codecov.io/gh/cive/Shogi_alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/cive/Shogi_alpha)
+# Shogi  [![Build Status](https://travis-ci.org/cive/Shogi_alpha.svg?branch=master)](https://travis-ci.org/cive/Shogi_alpha)   [![codecov](https://codecov.io/gh/cive/Shogi_alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/cive/Shogi_alpha)
 
 ===========
 
-#どんなプログラム?#
+どんなプログラム?
 
 将棋で遊ぶためのプログラム(alpha版)です(未完成)．
 最終的には，twitterで投稿したハッシュタグ付きのツイートを読み込んで，駒を動かす位置などを取得して，動かせる...ような大人数型のゲームを考えています．
 ![sample](https://github.com/cive/Shogi_alpha/blob/master/sample.png)
 
 
-##使い方##
+## 使い方
+
+### mavenのインストール
 
 - Debian系
 
