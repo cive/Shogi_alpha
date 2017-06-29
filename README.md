@@ -30,7 +30,7 @@ mvn --version
 ```
 
 - Windows
- - http://weblabo.oscasierra.net/install-maven-32-windows/
+    - http://weblabo.oscasierra.net/install-maven-32-windows/
 
 ### 実行ファイル生成と実行
  - Maven version 3.2.1
