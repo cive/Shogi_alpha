@@ -40,15 +40,27 @@ public class ShogiBoardComponent extends JComponent{
         enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
         addMouseListener(new MouseAdapter() {
            public void mouseClicked(MouseEvent e) {
-               if (controller.mode() == ShogiBoardController.BATTLE_MODE) {
-                   controller.selectPieceAt(e.getPoint());
-               } else if (controller.mode() == ShogiBoardController.VIEW_MODE) {
-
-               }
-               repaint();
+               mouseEvent(e);
            }
         });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                mouseEvent(e);
+            }
+        });
     }
+
+    private void mouseEvent(MouseEvent e) {
+        if (controller.mode() == ShogiBoardController.BATTLE_MODE) {
+            controller.selectPieceAt(e.getPoint());
+        } else if (controller.mode() == ShogiBoardController.VIEW_MODE) {
+
+        }
+        repaint();
+    }
+
+
     public void setGameBoard(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
         controller.setGameBoard(gameBoard);
