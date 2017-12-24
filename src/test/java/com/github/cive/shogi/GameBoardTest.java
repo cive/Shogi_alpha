@@ -172,5 +172,15 @@ public class GameBoardTest {
         } catch (PlayerNotDefinedGyokuException e) {
             e.printStackTrace();
         }
+        System.out.println(gb.getBoardSurface());
+    }
+    @Test
+    public void 文字列で駒を移動() {
+        GameBoard gb = new GameBoard();
+        assertTrue(gb.getPieceOf(new Point(2, 6)).getTypeOfPiece() == Piece.FU);
+        gb.MoveByString("7776 #aaa");
+        gb.MoveByString("3334 #twitter_shogi");
+        System.out.println(gb.getBoardSurface());
+        assertTrue(gb.getPieceOf(new Point(2, 5)).getTypeOfPiece() == Piece.FU);
     }
 }

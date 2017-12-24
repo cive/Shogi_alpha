@@ -40,6 +40,11 @@ mvn package
 java -jar ShogiAlpha-0.1-x64.jar
 ```
 
+### twitter4j 設定ファイルについて
+
+- twitter4j.properties.sample を twitter4j.properties にリネーム
+- https://apps.twitter.com/ で開発者用のOAuthコードを取得し、xxx の部分を書き換え
+
 ## お借りした素材を置いている方のリンク
  - [無料素材倶楽部 さま][1]
  - [100g98円 さま][2]

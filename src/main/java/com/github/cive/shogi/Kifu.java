@@ -224,15 +224,15 @@ public class Kifu {
             );
             boolean there_were_gin_on_col = gins.stream().anyMatch(g -> g.getPoint().y - src.getPoint().y == 0);
             boolean top = dst.getPoint().x - src.getPoint().x == 0
-                    && (dst.getPoint().y - src.getPoint().y) * trans > 0;
-            boolean right_top = (dst.getPoint().x - src.getPoint().x) * trans > 0
-                    && (dst.getPoint().y - src.getPoint().y) * trans > 0;
-            boolean left_top = (dst.getPoint().x - src.getPoint().x) * trans < 0
-                    && (dst.getPoint().y - src.getPoint().y) * trans > 0;
-            boolean right_bottom = (dst.getPoint().x - src.getPoint().x) * trans > 0
-                    && (dst.getPoint().y - src.getPoint().y) * trans < 0;
-            boolean left_bottom = (dst.getPoint().x - src.getPoint().x) * trans < 0
-                    && (dst.getPoint().y - src.getPoint().y) * trans < 0;
+                    && (dst.getPoint().y - src.getPoint().y) * trans == 1;
+            boolean right_top = (dst.getPoint().x - src.getPoint().x) * trans == 1
+                    && (dst.getPoint().y - src.getPoint().y) * trans == 1;
+            boolean left_top = (dst.getPoint().x - src.getPoint().x) * trans == -1
+                    && (dst.getPoint().y - src.getPoint().y) * trans == 1;
+            boolean right_bottom = (dst.getPoint().x - src.getPoint().x) * trans == 1
+                    && (dst.getPoint().y - src.getPoint().y) * trans == -1;
+            boolean left_bottom = (dst.getPoint().x - src.getPoint().x) * trans == -1
+                    && (dst.getPoint().y - src.getPoint().y) * trans == 1;
             if (gins.stream().count() == 0) {
                 str += "";
             } else if (top) {

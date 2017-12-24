@@ -43,6 +43,11 @@ public class ShogiBoardController {
         this.gameBoard = gameBoard;
     }
 
+    public void placeFromTweet(String str)
+    {
+        gameBoard.MoveByString(str);
+    }
+
     public void selectPieceAt(Point clicked) {
     	// 盤上の選択
         boolean isClickedOnBoard = clicked.x >= OFFSET.x && clicked.x <= (OFFSET.x+50*9) && clicked.y >= OFFSET.y && clicked.y <= (OFFSET.y+50*9);

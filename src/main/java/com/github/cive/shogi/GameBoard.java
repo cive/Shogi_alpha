@@ -57,7 +57,18 @@ public class GameBoard {
         setTurn(true);
     }
     public Piece getPieceOf(Point p) {
-        if(GameBoard.isInGrid(p))return attacker.getPieceOnBoardAt(p);
+        if(GameBoard.isInGrid(p))
+        {
+            if( attacker.getPieceOnBoardAt(p).getTypeOfPiece() != Piece.NONE )
+            {
+                return attacker.getPieceOnBoardAt(p);
+            }
+            else if (defender.getPieceOnBoardAt(p).getTypeOfPiece() != Piece.NONE)
+            {
+                return defender.getPieceOnBoardAt(p);
+            }
+            else return new EmptyPiece(new Point(-1,-1));
+        }
         else return new EmptyPiece(new Point(-1,-1));
     }
     public Piece getPieceOf(int x, int y) {
@@ -272,17 +283,19 @@ public class GameBoard {
     // 文字列で駒を移動する
     public void MoveByString(String str) {
     	// 文字列のパターンで場合分け
-    	if (Pattern.compile("[1-9]{4}").matcher(str).matches()) {
+    	if (Pattern.compile("^[1-9]{4}\\s[#].*").matcher(str).matches()) {
     		// 移動
         	Point src = LocationStringToPoint(str.substring(0, 2));
         	Point dst = LocationStringToPoint(str.substring(2, 4));
-    		replacePiece(src, dst);
-    	}else if (Pattern.compile("[1-9]{4}\\+").matcher(str).matches()) {
+            if (canPlaceInside(src, dst))
+        		replacePiece(src, dst);
+    	}else if (Pattern.compile("^[1-9]{4}\\+\\s[#].*").matcher(str).matches()) {
     		// 移動して成る
         	Point src = LocationStringToPoint(str.substring(0, 2));
         	Point dst = LocationStringToPoint(str.substring(2, 4));
-        	replacePieceWithPromote(src, dst);
-    	}else if (Pattern.compile(".[1-9]{2}").matcher(str).matches()) {
+            if (canPlaceInside(src, dst))
+            	replacePieceWithPromote(src, dst);
+    	}else if (Pattern.compile("^.[1-9]{2}\\s[#].*").matcher(str).matches()) {
     		// 持ち駒を指す
     		Map<String, Integer> nameIdPairs = new HashMap<String, Integer>() {
     			{

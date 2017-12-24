@@ -80,7 +80,7 @@ public abstract class Piece implements Constant, Cloneable{
     }
     @Override
     public String toString() {
-        return getName();
+        return getName() + getPoint().toString();
     }
     public Boolean isEmpty() {
         return this.getTypeOfPiece() == Piece.NONE;

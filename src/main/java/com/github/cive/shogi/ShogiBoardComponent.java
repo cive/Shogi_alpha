@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
+import twitter4j.*;
 
 public class ShogiBoardComponent extends JComponent{
     private static final String ASSET_IMG_PATH = "/img";
@@ -37,11 +38,35 @@ public class ShogiBoardComponent extends JComponent{
         selected_piece_in_hand = new EmptyPiece();
         loadImages();
 
+        // Twitter Listener
+        TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
+        FilterQuery filter = new FilterQuery();
+        filter.track(new String[] {"#twitter_shogi"});
+        twitterStream.addListener(new StatusListener() {
+            @Override
+            public void onStatus(Status status) {
+                controller.placeFromTweet(status.getText());
+                System.out.println(status.getText());
+                repaint();
+            }
+            @Override
+            public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {}
+            @Override
+            public void onTrackLimitationNotice(int i) {}
+            @Override
+            public void onScrubGeo(long l, long l1) {}
+            @Override
+            public void onStallWarning(StallWarning stallWarning) {}
+            @Override
+            public void onException(Exception e) {}
+        });
+        twitterStream.filter(filter);
+
         enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
         addMouseListener(new MouseAdapter() {
-           public void mouseClicked(MouseEvent e) {
-               mouseEvent(e);
-           }
+            public void mouseClicked(MouseEvent e) {
+                mouseEvent(e);
+            }
         });
         addMouseListener(new MouseAdapter() {
             @Override
