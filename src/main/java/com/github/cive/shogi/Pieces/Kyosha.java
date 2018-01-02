@@ -2,13 +2,13 @@ package com.github.cive.shogi.Pieces;
 
 import com.github.cive.shogi.Players.AheadPlayer;
 import com.github.cive.shogi.GameBoard;
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Kyosha extends Piece {
+public class Kyosha extends PieceBase {
     public Kyosha(Point p) {
         super(p);
     }
@@ -30,7 +30,7 @@ public class Kyosha extends Piece {
     public Set<Point> getRuleOfPiece(int player_type) {
         // dammy
         Set<Point> set = new HashSet<>();
-        if(player_type == Player.AHEAD) {
+        if(player_type == PlayerBase.AHEAD) {
             for(int i = 1; i < 10; i++) {
                 set.add(new Point(0, -i));
             }
@@ -42,10 +42,10 @@ public class Kyosha extends Piece {
         return set;
     }
     @Override
-    public Set<Point> getCapablePutPoint(Player attacker, Player defender) {
-        int player_type = attacker instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND;
+    public Set<Point> getCapablePutPoint(PlayerBase attacker, PlayerBase defender) {
+        int player_type = attacker instanceof AheadPlayer ? PlayerBase.AHEAD : PlayerBase.BEHIND;
         Set<Point> set = new HashSet<>();
-        int ini = player_type == Player.AHEAD ? -1 : 1;
+        int ini = player_type == PlayerBase.AHEAD ? -1 : 1;
         for(int i = ini;  Math.abs(i) < 9;i += ini) {
             Point target = new Point(this.getPoint().x, this.getPoint().y+i);
             if(GameBoard.isInGrid(target)) {
@@ -62,6 +62,6 @@ public class Kyosha extends Piece {
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.KYOSHA;
+        return PieceBase.KYOSHA;
     }
 }

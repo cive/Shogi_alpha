@@ -1,9 +1,9 @@
 package com.github.cive.shogi;
 
-import com.github.cive.shogi.Pieces.EmptyPiece;
-import com.github.cive.shogi.Pieces.Piece;
+import com.github.cive.shogi.Pieces.EmptyPieceBase;
+import com.github.cive.shogi.Pieces.PieceBase;
 import com.github.cive.shogi.Players.AheadPlayer;
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -11,7 +11,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
@@ -31,11 +30,11 @@ public class ShogiBoardComponent extends JComponent{
     private Graphics2D offShogi_Img;
     private BufferedImage Pieces_Img[][] = new BufferedImage[2][14];
     private Point selected_point = new Point(-1,-1);
-    private Piece selected_piece_in_hand;
+    private PieceBase selected_piece_Base_in_hand;
     private ShogiBoardController controller;
     public ShogiBoardComponent() {
         controller = new ShogiBoardController();
-        selected_piece_in_hand = new EmptyPiece();
+        selected_piece_Base_in_hand = new EmptyPieceBase();
         loadImages();
 
         // Twitter Listener
@@ -98,7 +97,7 @@ public class ShogiBoardComponent extends JComponent{
         Graphics2D g2 = (Graphics2D) g;
         selected_point = controller.getSelected_point();
         try {
-            selected_piece_in_hand = controller.getSelected_piece_in_hand();
+            selected_piece_Base_in_hand = controller.getSelected_piece_Base_in_hand();
         } catch (CloneNotSupportedException e ) {
             e.printStackTrace();
         }
@@ -114,30 +113,30 @@ public class ShogiBoardComponent extends JComponent{
         	paintHighlightsOnBoard(g);
         }
         // 持ち駒であれば
-        else if(gameBoard.getAttacker().matchTypeInHand(selected_piece_in_hand)){
+        else if(gameBoard.getAttacker().matchTypeInHand(selected_piece_Base_in_hand)){
         	paintHighlightsOfTableOfPiecesInHand(g);
         }
         g2.drawImage(Shogi_Img, 0, 0, 802, 500, this);
         g2.dispose();
     }
-    private void paintPiecesOnBoard(Graphics g, Player player) {
-        for(Piece p : player.getPiecesOnBoard()) {
+    private void paintPiecesOnBoard(Graphics g, PlayerBase player) {
+        for(PieceBase p : player.getPiecesOnBoard()) {
             offShogi_Img.drawImage(
-                    Pieces_Img[player instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND][p.getTypeOfPiece() - 1],
+                    Pieces_Img[player instanceof AheadPlayer ? PlayerBase.AHEAD : PlayerBase.BEHIND][p.getTypeOfPiece() - 1],
                     OFFSET.x + GRID * p.getPoint().x + OFFSET_OF_GRID.x,
                     OFFSET.y + GRID * p.getPoint().y + OFFSET_OF_GRID.y,
                     45, 48, this
             );
         }
     }
-    private void paintPiecesInHand(Graphics g, Player player) {
-        int player_type = player instanceof AheadPlayer ? Player.AHEAD : Player.BEHIND;
-        Point offset = player_type == Player.AHEAD ? AHEAD_OFFSET : BEHIND_OFFSET;
+    private void paintPiecesInHand(Graphics g, PlayerBase player) {
+        int player_type = player instanceof AheadPlayer ? PlayerBase.AHEAD : PlayerBase.BEHIND;
+        Point offset = player_type == PlayerBase.AHEAD ? AHEAD_OFFSET : BEHIND_OFFSET;
         int count_of[] = new int[7];
-        for(Piece p : player.getPiecesInHand()) {
+        for(PieceBase p : player.getPiecesInHand()) {
             int x = 0, y = 0;
-            if(p.getTypeOfPiece() == Piece.FU) {
-                count_of[Piece.FU - 1]++;
+            if(p.getTypeOfPiece() == PieceBase.FU) {
+                count_of[PieceBase.FU - 1]++;
             }
             for(int i = 2; i < 8; i+=2 ) {
                 if(p.getTypeOfPiece() == i) {
@@ -158,10 +157,10 @@ public class ShogiBoardComponent extends JComponent{
                     45, 48, this
             );
         }
-        for(int count = 1; count < count_of[Piece.FU -1]; count++) {
-            int width = (count_of[Piece.FU-1] < 8)?15:5;
+        for(int count = 1; count < count_of[PieceBase.FU -1]; count++) {
+            int width = (count_of[PieceBase.FU-1] < 8)?15:5;
             offShogi_Img.drawImage(
-                    Pieces_Img[player_type][Piece.FU - 1],
+                    Pieces_Img[player_type][PieceBase.FU - 1],
                     offset.x + count * width,
                     offset.y,
                     45, 48, this
@@ -175,7 +174,7 @@ public class ShogiBoardComponent extends JComponent{
      */
     private void paintHighlightsOfTableOfPiecesInHand(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        Piece sel = selected_piece_in_hand;
+        PieceBase sel = selected_piece_Base_in_hand;
 
         // TODO: 持ち駒自身のhighlightがまだ
         /*
@@ -219,7 +218,7 @@ public class ShogiBoardComponent extends JComponent{
      */
     private void paintHighlightsOnBoard(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        Piece sel = gameBoard.getPieceOf(selected_point.x, selected_point.y);
+        PieceBase sel = gameBoard.getPieceOf(selected_point.x, selected_point.y);
         Rectangle rect = new Rectangle(
                 OFFSET.x + GRID * selected_point.x,
                 OFFSET.y + GRID * selected_point.y,
@@ -262,16 +261,16 @@ public class ShogiBoardComponent extends JComponent{
             for(int i = 0; i < 14; i++) {
                 String filename_of[] = new String[2];
                 if(i < 10) {
-                    filename_of[Player.AHEAD] = String.format("%s/pieces/B%s.png",ASSET_IMG_PATH , pad(i+1) );
-                    filename_of[Player.BEHIND] = String.format("%s/pieces/W%s.png",ASSET_IMG_PATH , pad(i+1) );
+                    filename_of[PlayerBase.AHEAD] = String.format("%s/pieces/B%s.png",ASSET_IMG_PATH , pad(i+1) );
+                    filename_of[PlayerBase.BEHIND] = String.format("%s/pieces/W%s.png",ASSET_IMG_PATH , pad(i+1) );
                 } else {
-                    filename_of[Player.AHEAD] = String.format("%s/pieces/B11_%s.png",ASSET_IMG_PATH , pad(i-10+1));
-                    filename_of[Player.BEHIND] = String.format("%s/pieces/W11_%s.png",ASSET_IMG_PATH,  pad(i-10+1));
+                    filename_of[PlayerBase.AHEAD] = String.format("%s/pieces/B11_%s.png",ASSET_IMG_PATH , pad(i-10+1));
+                    filename_of[PlayerBase.BEHIND] = String.format("%s/pieces/W11_%s.png",ASSET_IMG_PATH,  pad(i-10+1));
                 }
                 //TODO: delete print 4 debug
-                System.out.println(filename_of[Player.BEHIND] + " " + filename_of[Player.AHEAD]);
-                Pieces_Img[Player.AHEAD][i] = ImageIO.read(getClass().getResource(filename_of[Player.AHEAD]));
-                Pieces_Img[Player.BEHIND][i] = ImageIO.read(getClass().getResource(filename_of[Player.BEHIND]));
+                System.out.println(filename_of[PlayerBase.BEHIND] + " " + filename_of[PlayerBase.AHEAD]);
+                Pieces_Img[PlayerBase.AHEAD][i] = ImageIO.read(getClass().getResource(filename_of[PlayerBase.AHEAD]));
+                Pieces_Img[PlayerBase.BEHIND][i] = ImageIO.read(getClass().getResource(filename_of[PlayerBase.BEHIND]));
             }
         } catch(IOException e) {
             //TODO: delete print 4 debug

@@ -1,8 +1,8 @@
 package com.github.cive.shogi;
 
-import com.github.cive.shogi.Pieces.EmptyPiece;
-import com.github.cive.shogi.Pieces.Piece;
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Pieces.EmptyPieceBase;
+import com.github.cive.shogi.Pieces.PieceBase;
+import com.github.cive.shogi.Players.PlayerBase;
 import org.w3c.dom.ranges.RangeException;
 
 import java.util.ArrayList;
@@ -17,39 +17,51 @@ import java.util.List;
  * もし、実際の手番(movementOfPieceList.size())よりも前の手番を参照していたらそれ以降の盤面を削除し、そこから新規に記録する
  */
 public class Kifu {
+    /**
+     * Players 構造体
+     */
     private class Players {
-        private Player attacker;
-        private Player defender;
-        public Players(Player attacker, Player defender) {
+        private PlayerBase attacker;
+        private PlayerBase defender;
+        public Players(PlayerBase attacker, PlayerBase defender) {
             setAttacker(attacker);
             setDefender(defender);
         }
-        protected void setAttacker(Player attacker) {
+        protected void setAttacker(PlayerBase attacker) {
             try {
                 this.attacker = attacker.clone();
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
             }
         }
-        protected void setDefender(Player defender) {
+        protected void setDefender(PlayerBase defender) {
             try {
                 this.defender = defender.clone();
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
             }
         }
-        protected Player getAttacker() throws CloneNotSupportedException{
+        protected PlayerBase getAttacker() throws CloneNotSupportedException{
             return attacker.clone();
         }
-        protected Player getDefender() throws CloneNotSupportedException{
+        protected PlayerBase getDefender() throws CloneNotSupportedException{
             return defender.clone();
         }
     }
+    // 動かした回数
     private int movedNum;
+    // 千日手を調べるために使用する変数
+    // Kifu クラスには、盤面のハッシュ値を計算する機構がないために必要
     public Boolean hasSafeUpdated;
+    // 初期盤面を登録するために必要な変数
     private Players initialPlayers;
+    // 棋譜を記録するためのリスト
+    // undo, redo をするために保持する
     private ArrayList<MovementOfPiece> movementOfPieceList = null;
+    // 文字列の棋譜を記録するリスト
+    // 棋譜をエクスポートするために使用する
     private ArrayList<String> kifuList = null;
+    // 千日手を判定するために保持するリスト
     private List<String> hashList = null;
     public Kifu() {
         movementOfPieceList = new ArrayList<>();
@@ -57,18 +69,31 @@ public class Kifu {
         hashList = new ArrayList<>();
         hasSafeUpdated = true;
     }
-    public void setInitialPlayers(Player attacker, Player defender) {
+    // 初期配置は、redo する際に必要
+    public void setInitialPlayers(PlayerBase attacker, PlayerBase defender) {
         initialPlayers = new Players(attacker, defender);
     }
-    public Player getIniAttacker() throws CloneNotSupportedException{
+    public PlayerBase getIniAttacker() throws CloneNotSupportedException{
         return initialPlayers.getAttacker();
     }
-    public Player getIniDefender() throws CloneNotSupportedException{
+    public PlayerBase getIniDefender() throws CloneNotSupportedException{
         return initialPlayers.getDefender();
     }
+
+    /**
+     * どちらの手番かを動かした回数から調べる
+     * @param num 手目
+     * @return TRUE ならば、手前のプレイヤーの手番
+     */
     public Boolean hasAhead(int num) {
         return num > 0 && (movedNum > 0 && movedNum >= num);
     }
+
+    /**
+     * undo した際に、次の手を持っているか調べる
+     * @param num 手目
+     * @return TRUE ならば、次の手が記録されている
+     */
     public Boolean hasNext(int num) {
         return num > 0 && movedNum + num <= movementOfPieceList.size();
     }
@@ -99,7 +124,8 @@ public class Kifu {
      * @param num num手目にアップデート、それ以降の棋譜は削除
      * @throws RangeException 入力値numが不正
      */
-    private void update(MovementOfPiece mp, Player attacker, Player defender, int num) throws RangeException {
+    private void update(MovementOfPiece mp, PlayerBase attacker, PlayerBase defender, int num) throws RangeException {
+        // movementOfPieceList.size() は初期値が 0
         if (num > movementOfPieceList.size() + 1 || num < 0) {
             throw new RangeException(RangeException.BAD_BOUNDARYPOINTS_ERR, "範囲外の値です");
         } else if (movementOfPieceList.size() > num) {
@@ -109,21 +135,28 @@ public class Kifu {
                 hashList.remove(num);
             }
         }
-        movementOfPieceList.add(mp);
         try {
-            kifuList.add(getKifu(
-                    mp
-                    , movementOfPieceList.get(movementOfPieceList.size() - 1)
-                    , attacker.clone()
-                    , defender.clone()
-            ));
+            if (movementOfPieceList.size() > 0) {
+                kifuList.add(getKifu(
+                        mp
+                        , movementOfPieceList.get(movementOfPieceList.size() - 1)
+                        , attacker.clone()
+                        , defender.clone()
+                ));
+            }
+            else
+            {
+                kifuList.add(getKifu(mp, attacker));
+            }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
+        movementOfPieceList.add(mp);
         movedNum = num;
     }
 
     /**
+     * このメソッドは、 {@code undo(n)} などを考慮しないで次の一手を指す際に使える
      * {@code undo(n)}でn手前にセットすることでn手前以降のデータを削除し、n+1手目のデータをセットする
      * {@code undo(n)}を使用していない場合は、棋譜を登録するのみ
      * 使用後は {@code updateHash}を使用すること
@@ -131,7 +164,7 @@ public class Kifu {
      * @param attacker 駒を移動する側
      * @param defender 防御側
      */
-    public void update(MovementOfPiece mp, Player attacker, Player defender) {
+    public void update(MovementOfPiece mp, PlayerBase attacker, PlayerBase defender) {
         if (!hasSafeUpdated) {
             System.err.println("haven't update fully");
             return;
@@ -159,6 +192,26 @@ public class Kifu {
     }
 
     /**
+     * 初手の際にのみ使用する関数
+     * @param now
+     * @param attacker
+     * @return
+     */
+    protected String getKifu(MovementOfPiece now, PlayerBase attacker)
+    {
+        String str = "▲";
+        try{
+            str += now.getDst().getPosition().x + getChineseNum(now.getDst().getPosition().y);
+            str += now.getDst().getName();
+        } catch (CloneNotSupportedException ce)
+        {
+            System.out.println(ce.getMessage());
+        }
+        System.out.println("info: " + str);
+        return str;
+    }
+
+    /**
      * 棋譜(String)を出力するメソッド
      * updateされる毎に実行される
      * @param now 現在の盤面
@@ -167,8 +220,8 @@ public class Kifu {
      * @param defender 現在の盤面の防御側
      * @return 棋譜
      */
-    private String getKifu(MovementOfPiece now, MovementOfPiece prev, Player attacker, Player defender) {
-        Piece cSrc, cDst;
+    protected String getKifu(MovementOfPiece now, MovementOfPiece prev, PlayerBase attacker, PlayerBase defender) {
+        PieceBase cSrc, cDst;
         try {
             cSrc = now.getSrc();
             cDst = now.getDst();
@@ -176,16 +229,16 @@ public class Kifu {
             e.printStackTrace();
             return "clone error";
         }
-        final Piece src = cSrc;
-        final Piece dst = cDst;
+        final PieceBase src = cSrc;
+        final PieceBase dst = cDst;
         String str = "";
         str += isBlackTurn() ? "▲" : "△";
         int trans = isBlackTurn() ? 1 : -1; /* 先手、後手座標変換用 */
         try {
-            if (prev.getDst().getPoint().equals(dst.getPoint())) {
+            if (movedNum != 1 && isSamePosition(now, prev)) {
                 str += "同";
             } else {
-                str += (10 - dst.getPoint().x + 1) + getChineseNum(dst.getPoint().y + 1);
+                str += dst.getPosition().x + getChineseNum(dst.getPosition().y);
             }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -199,13 +252,14 @@ public class Kifu {
          * おける場所が重なる駒は
          * KEIMA, GIN, KIN(NARI*), KAKU, HISHA, UMA or RYU
          */
-        if (src_type == Piece.KEIMA) {
-            Piece keima = attacker.getPiecesOnBoard(src_type)
-                    .filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
+        if (src_type == PieceBase.KEIMA) {
+            attacker.getPiecesOnBoard(src_type).forEach(x -> System.out.println(x.getPosition()));
+            PieceBase keima = attacker.getPiecesOnBoard(src_type)
+                    .filter(x -> x.getCapablePutPoint(attacker, defender).contains(dst.getPoint()))
                     .filter(x -> !x.getPoint().equals(src.getPoint()))
                     .findFirst()
-                    .orElse(new EmptyPiece());
-            if (keima.getTypeOfPiece() == Piece.NONE) {
+                    .orElse(new EmptyPieceBase());
+            if (keima.getTypeOfPiece() == PieceBase.NONE) {
                 str += "";
             } else if ((src.getPoint().x - keima.getPoint().x) * trans > 0) {
                 str += "右";
@@ -213,13 +267,13 @@ public class Kifu {
                 str += "左";
             }
         }
-        if (src_type == Piece.GIN) {
-            List<Piece> gins = new ArrayList<>(
+        if (src_type == PieceBase.GIN) {
+            List<PieceBase> gins = new ArrayList<>(
                     Arrays.asList(
                         attacker.getPiecesOnBoard(src_type)
                         .filter(x -> x.getCapablePutPoint(attacker, defender) == dst.getPoint())
                         .filter(x -> !x.getPoint().equals(src.getPoint()))
-                        .toArray(Piece[]::new)
+                        .toArray(PieceBase[]::new)
                     )
             );
             boolean there_were_gin_on_col = gins.stream().anyMatch(g -> g.getPoint().y - src.getPoint().y == 0);
@@ -274,7 +328,12 @@ public class Kifu {
                 str += "成";
             }
         }
+        System.out.println("info: " + str);
         return str;
+    }
+    protected boolean isSamePosition(MovementOfPiece now, MovementOfPiece prev) throws CloneNotSupportedException
+    {
+        return prev != null && prev.getDst().getPoint().equals(now.getDst().getPoint());
     }
     public boolean isBlackTurn() {
         return movedNum % 2 == 0;

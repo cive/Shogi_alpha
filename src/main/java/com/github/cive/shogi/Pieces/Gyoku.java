@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Gyoku extends Piece {
+public class Gyoku extends PieceBase {
 
     public Gyoku(Point p) {
         super(p);
@@ -36,6 +36,6 @@ public class Gyoku extends Piece {
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.GYOKU;
+        return PieceBase.GYOKU;
     }
 }

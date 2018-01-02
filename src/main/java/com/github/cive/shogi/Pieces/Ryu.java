@@ -1,6 +1,6 @@
 package com.github.cive.shogi.Pieces;
 
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -28,8 +28,8 @@ public class Ryu extends Hisha {
     public Set<Point> getRuleOfPiece(int player_type) {
         // dammy
         Set<Point> set = new HashSet<>();
-        Piece hisha = new Hisha(this.getPoint());
-        Piece gyoku = new Gyoku(this.getPoint());
+        PieceBase hisha = new Hisha(this.getPoint());
+        PieceBase gyoku = new Gyoku(this.getPoint());
         set.addAll(hisha.getRuleOfPiece(player_type));
         set.addAll(gyoku.getRuleOfPiece(player_type));
 
@@ -37,10 +37,10 @@ public class Ryu extends Hisha {
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.RYU;
+        return PieceBase.RYU;
     }
     @Override
-    public Set<Point> getCapablePutPoint(Player attacker, Player defender) {
+    public Set<Point> getCapablePutPoint(PlayerBase attacker, PlayerBase defender) {
         Set<Point> set = new HashSet<>();
         set.addAll(getSetToNeedToAdd(attacker, defender, true, 1, this.getPoint()));
         set.addAll(getSetToNeedToAdd(attacker, defender, false, 1, this.getPoint()));

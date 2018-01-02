@@ -1,6 +1,6 @@
 package com.github.cive.shogi.Pieces;
 
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -29,18 +29,18 @@ public class Uma extends Kaku{
         // dammy
         Set<Point> set = new HashSet<>();
         PieceFactory factory = new PieceFactory();
-        Piece kaku = factory.create(Piece.KAKU, this.getPoint());
-        Piece gyoku = factory.create(Piece.GYOKU, this.getPoint());
+        PieceBase kaku = factory.create(PieceBase.KAKU, this.getPoint());
+        PieceBase gyoku = factory.create(PieceBase.GYOKU, this.getPoint());
         set.addAll(kaku.getRuleOfPiece(player_type));
         set.addAll(gyoku.getRuleOfPiece(player_type));
         return set;
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.UMA;
+        return PieceBase.UMA;
     }
     @Override
-    public Set<Point> getCapablePutPoint(Player attacker, Player defender) {
+    public Set<Point> getCapablePutPoint(PlayerBase attacker, PlayerBase defender) {
         Set<Point> set = new HashSet<>();
         set.addAll(getSetToNeedToAdd(attacker, defender, true, 1, this.getPoint()));
         set.addAll(getSetToNeedToAdd(attacker, defender, false, 1, this.getPoint()));

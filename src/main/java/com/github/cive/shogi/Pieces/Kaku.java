@@ -1,13 +1,13 @@
 package com.github.cive.shogi.Pieces;
 
 import com.github.cive.shogi.GameBoard;
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Kaku extends Piece {
+public class Kaku extends PieceBase {
     public Kaku(Point p) {
         super(p);
     }
@@ -37,7 +37,7 @@ public class Kaku extends Piece {
         return set;
     }
     @Override
-    public Set<Point> getCapablePutPoint(Player attacker, Player defender){
+    public Set<Point> getCapablePutPoint(PlayerBase attacker, PlayerBase defender){
         Set<Point> set = new HashSet<>();
         set.addAll(getSetToNeedToAdd(attacker, defender, true, 1, this.getPoint()));
         set.addAll(getSetToNeedToAdd(attacker, defender, false, 1, this.getPoint()));
@@ -46,7 +46,7 @@ public class Kaku extends Piece {
         return set;
     }
 
-    public Set<Point> getSetToNeedToAdd(Player attacker, Player defender, boolean axis, int ini, Point selected) {
+    public Set<Point> getSetToNeedToAdd(PlayerBase attacker, PlayerBase defender, boolean axis, int ini, Point selected) {
         Set<Point> set_for_add = new HashSet<>();
         for(int i = ini; Math.abs(i) < 9; i += ini) {
             Point target = new Point(selected.x+(axis?i:-i), selected.y+i);
@@ -64,6 +64,6 @@ public class Kaku extends Piece {
     }
    @Override
     public Integer getTypeOfPiece() {
-        return Piece.KAKU;
+        return PieceBase.KAKU;
     }
 }

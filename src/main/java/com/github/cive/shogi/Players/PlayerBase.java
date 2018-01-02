@@ -1,7 +1,7 @@
 package com.github.cive.shogi.Players;
 
-import com.github.cive.shogi.Pieces.EmptyPiece;
-import com.github.cive.shogi.Pieces.Piece;
+import com.github.cive.shogi.Pieces.EmptyPieceBase;
+import com.github.cive.shogi.Pieces.PieceBase;
 
 import java.awt.*;
 import java.util.*;
@@ -12,73 +12,73 @@ import java.util.stream.Stream;
  * Player class
  * have pieces on board and in hand.
  */
-public abstract class Player implements Cloneable{
+public abstract class PlayerBase implements Cloneable{
     public final static int AHEAD = 0;
     public final static int BEHIND = 1;
     static final int FU_OCHI = 0;
     static final int HISHA_KAKU_OCHI = 1;
-    public Player clone() throws CloneNotSupportedException {
-        Player c = (Player)super.clone();
+    public PlayerBase clone() throws CloneNotSupportedException {
+        PlayerBase c = (PlayerBase)super.clone();
         c.piecesInHand = new ArrayList<>(piecesInHand);
         c.piecesOnBoard = new ArrayList<>(piecesOnBoard);
         return c;
     }
-    private ArrayList<Piece> piecesOnBoard = new ArrayList<>();
-    private ArrayList<Piece> piecesInHand = new ArrayList<>();
-    public ArrayList<Piece> getPiecesOnBoard() {
+    private ArrayList<PieceBase> piecesOnBoard = new ArrayList<>();
+    private ArrayList<PieceBase> piecesInHand = new ArrayList<>();
+    public ArrayList<PieceBase> getPiecesOnBoard() {
         return piecesOnBoard;
     }
-    public ArrayList<Piece> getPiecesInHand() {
+    public ArrayList<PieceBase> getPiecesInHand() {
         return piecesInHand;
     }
-    public void addPiecesOnBoard(Piece p) {
+    public void addPiecesOnBoard(PieceBase p) {
         this.piecesOnBoard.add(p);
     }
-    public void addPiecesInHand(Piece p) {
+    public void addPiecesInHand(PieceBase p) {
         this.piecesInHand.add(p);
     }
     // n <= 34
     // O(n)
-    public Stream<Piece> getPiecesOnBoard(int type) {
+    public Stream<PieceBase> getPiecesOnBoard(int type) {
         return piecesOnBoard.stream().filter(x -> x.getTypeOfPiece() == type);
     }
     // O(n)
-    public Piece getPieceOnBoardAt(Point p) {
-        for (Piece piece : piecesOnBoard) {
-            if (piece.getPoint().equals(p)) return piece;
+    public PieceBase getPieceOnBoardAt(Point point_for_gui) {
+        for (PieceBase pieceBase : piecesOnBoard) {
+            if (pieceBase.getPoint().equals(point_for_gui)) return pieceBase;
         }
-        return new EmptyPiece(new Point(-1,-1));
+        return new EmptyPieceBase(new Point(-1,-1));
     }
     // O(n)
-    public Integer getPieceTypeOnBoardAt(Point p) {
-        for (Piece piece : piecesOnBoard) {
-            if (piece.getPoint().equals(p)) return piece.getTypeOfPiece();
+    public Integer getPieceTypeOnBoardAt(Point point_for_gui) {
+        for (PieceBase pieceBase : piecesOnBoard) {
+            if (pieceBase.getPoint().equals(point_for_gui)) return pieceBase.getTypeOfPiece();
         }
-        return Piece.NONE;
+        return PieceBase.NONE;
     }
     // O(n)
-    public Boolean reducePieceInHandThatIs(Piece p) {
-        for (Piece piece: piecesInHand) {
-            if (java.util.Objects.equals(piece.getTypeOfPiece(), p.getTypeOfPiece())){
-                piecesInHand.remove(piece);
+    public Boolean reducePieceInHandThatIs(PieceBase p) {
+        for (PieceBase pieceBase : piecesInHand) {
+            if (java.util.Objects.equals(pieceBase.getTypeOfPiece(), p.getTypeOfPiece())){
+                piecesInHand.remove(pieceBase);
                 return true;
             }
         }
         return false;
     }
     // O(n)
-    public Boolean reducePieceOnBoardAt(Point p) {
-        for (Piece piece: piecesOnBoard) {
-            if (piece.getPoint().equals(p)){
-                piecesOnBoard.remove(piece);
+    public Boolean reducePieceOnBoardAt(Point point_for_gui) {
+        for (PieceBase pieceBase : piecesOnBoard) {
+            if (pieceBase.getPoint().equals(point_for_gui)){
+                piecesOnBoard.remove(pieceBase);
                 return true;
             }
         }
         return false;
     }
     // O(n)
-    public Boolean matchTypeInHand(Piece search) {
-        for (Piece p : piecesInHand) {
+    public Boolean matchTypeInHand(PieceBase search) {
+        for (PieceBase p : piecesInHand) {
             if (Objects.equals(p.getTypeOfPiece(), search.getTypeOfPiece())) return true;
         }
         return false;
@@ -115,7 +115,7 @@ public abstract class Player implements Cloneable{
         setKyosha();
         setGyoku();
     }
-    public void update(Player player) {
+    public void update(PlayerBase player) {
         piecesInHand.clear();
         piecesOnBoard.clear();
         piecesInHand.addAll(player.getPiecesInHand());

@@ -1,10 +1,8 @@
 package com.github.cive.shogi;
 
 import com.github.cive.shogi.Exceptions.PlayerNotDefinedGyokuException;
-import com.github.cive.shogi.Pieces.EmptyPiece;
-import com.github.cive.shogi.GameBoard;
-import com.github.cive.shogi.Pieces.Piece;
-import com.github.cive.shogi.Pieces.PieceFactory;
+import com.github.cive.shogi.Pieces.EmptyPieceBase;
+import com.github.cive.shogi.Pieces.PieceBase;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 
@@ -19,8 +17,8 @@ public class GameBoardTest {
     @Test
     public void getPieceOfで盤外を選択したときに返すのはEmptyPiece() throws Exception {
         GameBoard gameBoard = new GameBoard();
-        assertTrue(gameBoard.getPieceOf(new Point(-1, 0)) instanceof EmptyPiece);
-        assertTrue(gameBoard.getPieceOf(new Point(13124,5151)) instanceof EmptyPiece);
+        assertTrue(gameBoard.getPieceOf(new Point(-1, 0)) instanceof EmptyPieceBase);
+        assertTrue(gameBoard.getPieceOf(new Point(13124,5151)) instanceof EmptyPieceBase);
     }
 
     @Test
@@ -75,33 +73,33 @@ public class GameBoardTest {
         GameBoard gameBoard = new GameBoard(0);
         assertTrue(gameBoard.getAttacker().getPieceOnBoardAt(new Point(7,7)).canPromote(new Point(7,2), gameBoard.isAheadsTurn()));
         gameBoard.replacePieceWithPromote(new Point(7,7), new Point(7,2));
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(7,2)) == Piece.RYU);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(7,2)) == PieceBase.RYU);
     }
 
     @Test
     public void 駒を入手できるか() {
         GameBoard gameBoard = new GameBoard(0);
         gameBoard.replacePieceWithPromote(new Point(7,7), new Point(7,2));
-        assertTrue(gameBoard.getDefender().getPiecesInHand().get(0).getTypeOfPiece() == Piece.FU);
+        assertTrue(gameBoard.getDefender().getPiecesInHand().get(0).getTypeOfPiece() == PieceBase.FU);
     }
     @Test
     public void 棋譜から駒を移動させる() {
         GameBoard gameBoard = new GameBoard();
         gameBoard.replacePiece(new Point(6,6), new Point(6,5));
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 5)) == Piece.FU);
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 6)) == Piece.NONE);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 5)) == PieceBase.FU);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 6)) == PieceBase.NONE);
         gameBoard.replacePiece(new Point(2,2), new Point(2,3));
         gameBoard.replacePiece(new Point(6,5), new Point(6,4));
         // 一回目の駒移動を再現
         gameBoard.replaceAt(1);
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 5)) == Piece.FU);
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 6)) == Piece.NONE);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 5)) == PieceBase.FU);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(6, 6)) == PieceBase.NONE);
         // 二回目の駒移動を再現
         gameBoard.replaceAt(2);
-        assertTrue(gameBoard.getAttacker().getPieceTypeOnBoardAt(new Point(6, 5)) == Piece.FU);
-        assertTrue(gameBoard.getAttacker().getPieceTypeOnBoardAt(new Point(6, 6)) == Piece.NONE);
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(2, 3)) == Piece.FU);
-        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(2, 2)) == Piece.NONE);
+        assertTrue(gameBoard.getAttacker().getPieceTypeOnBoardAt(new Point(6, 5)) == PieceBase.FU);
+        assertTrue(gameBoard.getAttacker().getPieceTypeOnBoardAt(new Point(6, 6)) == PieceBase.NONE);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(2, 3)) == PieceBase.FU);
+        assertTrue(gameBoard.getDefender().getPieceTypeOnBoardAt(new Point(2, 2)) == PieceBase.NONE);
     }
     @Test
     public void 途中から始める() {
@@ -163,7 +161,7 @@ public class GameBoardTest {
         gb.replacePieceWithPromote(new Point(1, 7), new Point(7, 1));
         gb.replacePiece(new Point(6, 0), new Point(7, 1));
         gb.placePieceInHand(gb.getAttacker().getPiecesInHand().stream()
-                    .filter(x->x.getTypeOfPiece() == Piece.KAKU)
+                    .filter(x->x.getTypeOfPiece() == PieceBase.KAKU)
                     .findFirst()
                     .get()
                 , new Point(8, 4));
@@ -177,10 +175,10 @@ public class GameBoardTest {
     @Test
     public void 文字列で駒を移動() {
         GameBoard gb = new GameBoard();
-        assertTrue(gb.getPieceOf(new Point(2, 6)).getTypeOfPiece() == Piece.FU);
+        assertTrue(gb.getPieceOf(new Point(2, 6)).getTypeOfPiece() == PieceBase.FU);
         gb.MoveByString("7776 #aaa");
         gb.MoveByString("3334 #twitter_shogi");
         System.out.println(gb.getBoardSurface());
-        assertTrue(gb.getPieceOf(new Point(2, 5)).getTypeOfPiece() == Piece.FU);
+        assertTrue(gb.getPieceOf(new Point(2, 5)).getTypeOfPiece() == PieceBase.FU);
     }
 }

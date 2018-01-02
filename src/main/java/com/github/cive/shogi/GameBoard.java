@@ -6,31 +6,29 @@
 package com.github.cive.shogi;
 
 import com.github.cive.shogi.Exceptions.PlayerNotDefinedGyokuException;
-import com.github.cive.shogi.Pieces.EmptyPiece;
-import com.github.cive.shogi.Pieces.Piece;
+import com.github.cive.shogi.Pieces.EmptyPieceBase;
+import com.github.cive.shogi.Pieces.PieceBase;
 import com.github.cive.shogi.Pieces.PieceFactory;
 import com.github.cive.shogi.Players.AheadPlayer;
 import com.github.cive.shogi.Players.BehindPlayer;
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Stream;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 //import jdk.internal.util.xml.impl.Pair;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
 public class GameBoard {
     private Kifu kifu;
-    private Player attacker;
-    private Player defender;
-    private Player playerA;
-    private Player playerB;
+    private PlayerBase attacker;
+    private PlayerBase defender;
+    private PlayerBase playerA;
+    private PlayerBase playerB;
     public GameBoard() {
         initGame();
         //printBoard();
@@ -56,22 +54,22 @@ public class GameBoard {
         kifu.setInitialPlayers(playerA, playerB);
         setTurn(true);
     }
-    public Piece getPieceOf(Point p) {
+    public PieceBase getPieceOf(Point p) {
         if(GameBoard.isInGrid(p))
         {
-            if( attacker.getPieceOnBoardAt(p).getTypeOfPiece() != Piece.NONE )
+            if( attacker.getPieceOnBoardAt(p).getTypeOfPiece() != PieceBase.NONE )
             {
                 return attacker.getPieceOnBoardAt(p);
             }
-            else if (defender.getPieceOnBoardAt(p).getTypeOfPiece() != Piece.NONE)
+            else if (defender.getPieceOnBoardAt(p).getTypeOfPiece() != PieceBase.NONE)
             {
                 return defender.getPieceOnBoardAt(p);
             }
-            else return new EmptyPiece(new Point(-1,-1));
+            else return new EmptyPieceBase(new Point(-1,-1));
         }
-        else return new EmptyPiece(new Point(-1,-1));
+        else return new EmptyPieceBase(new Point(-1,-1));
     }
-    public Piece getPieceOf(int x, int y) {
+    public PieceBase getPieceOf(int x, int y) {
         return this.getPieceOf(new Point(x, y));
     }
     public static boolean isInGrid(Point point) {
@@ -101,37 +99,37 @@ public class GameBoard {
         }
         isConclusion();
     }
-    public Player getAttacker() {
+    public PlayerBase getAttacker() {
         return attacker;
     }
-    public Player getDefender() {
+    public PlayerBase getDefender() {
         return defender;
     }
     public Boolean canPlaceInside(Point src, Point dst) {
-        Piece p = attacker.getPieceOnBoardAt(src);
-        if (p.getTypeOfPiece() == Piece.NONE) return false;
+        PieceBase p = attacker.getPieceOnBoardAt(src);
+        if (p.getTypeOfPiece() == PieceBase.NONE) return false;
         Set<Point> s = p.getCapablePutPoint(attacker, defender);
         return s.size() != 0 && s.contains(dst);
     }
     public Boolean isTherePieceAt(Point p) {
         return attacker.getPieceTypeOnBoardAt(p) + defender.getPieceTypeOnBoardAt(p) > 0;
     }
-    private void placePieceInHand(Piece piece, Point dst, Boolean opt){
+    private void placePieceInHand(PieceBase pieceBase, Point dst, Boolean opt){
     	// 持ち駒を置けるなら置いて，交代
-    	if(wouldMoveNextLater(piece,dst) && !selected_will_be_niFu(piece, dst.x) && !isTherePieceAt(dst)){
+    	if(wouldMoveNextLater(pieceBase,dst) && !selected_will_be_niFu(pieceBase, dst.x) && !isTherePieceAt(dst)){
 
             // 棋譜の登録
             if (opt) {
-                Piece src_piece = new PieceFactory().create(Piece.NONE, new Point(-1, -1));
-                Piece dst_piece = new PieceFactory().create(piece.getTypeOfPiece(), dst);
-                dst_piece.setPoint(dst);
-                kifu.update(new MovementOfPiece(src_piece, dst_piece), attacker, defender);
+                PieceBase src_pieceBase = new PieceFactory().create(PieceBase.NONE, new Point(-1, -1));
+                PieceBase dst_pieceBase = new PieceFactory().create(pieceBase.getTypeOfPiece(), dst);
+                dst_pieceBase.setPoint(dst);
+                kifu.update(new MovementOfPiece(src_pieceBase, dst_pieceBase), attacker, defender);
             }
 
-            attacker.reducePieceInHandThatIs(piece);
+            attacker.reducePieceInHandThatIs(pieceBase);
     		// 持ち駒を置く
-            piece.setPoint(dst);
-            attacker.addPiecesOnBoard(piece);
+            pieceBase.setPoint(dst);
+            attacker.addPiecesOnBoard(pieceBase);
 
             if (opt) kifu.updateHash(getHash());
 
@@ -139,8 +137,8 @@ public class GameBoard {
     	}
     }
 
-    public void placePieceInHand(Piece piece, Point dst) {
-        placePieceInHand(piece, dst, true);
+    public void placePieceInHand(PieceBase pieceBase, Point dst) {
+        placePieceInHand(pieceBase, dst, true);
     }
 
     private void replacePiece(Point src, Point dst, Boolean opt) {
@@ -148,8 +146,8 @@ public class GameBoard {
 
             // 棋譜の登録
             if (opt) {
-                Piece src_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
-                Piece dst_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
+                PieceBase src_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
+                PieceBase dst_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
                 dst_piece_for_kifu.setPoint(dst);
                 kifu.update(new MovementOfPiece(src_piece_for_kifu, dst_piece_for_kifu), attacker, defender);
             }
@@ -178,10 +176,10 @@ public class GameBoard {
         try {
             // 棋譜の登録
             if (opt) {
-                Piece src_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
-                Piece dst_piece_for_kifu = attacker.getPieceOnBoardAt(src).clone();
-                dst_piece_for_kifu.setPoint(dst);
-                kifu.update(new MovementOfPiece(src_piece_for_kifu, dst_piece_for_kifu.getPromotePiece()), attacker, defender);
+                PieceBase src_piece_Base_for_kifu = attacker.getPieceOnBoardAt(src).clone();
+                PieceBase dst_piece_Base_for_kifu = attacker.getPieceOnBoardAt(src).clone();
+                dst_piece_Base_for_kifu.setPoint(dst);
+                kifu.update(new MovementOfPiece(src_piece_Base_for_kifu, dst_piece_Base_for_kifu.getPromotePiece()), attacker, defender);
             }
 
             // 駒の移動
@@ -225,34 +223,34 @@ public class GameBoard {
         kifu.undo(list.size() - num);
     }
 
-    private void replace(Point src, Point dst, Player attacker, Player defender, Boolean willPromote) throws CloneNotSupportedException{
-        Piece src_piece = attacker.getPieceOnBoardAt(src).clone();
+    private void replace(Point src, Point dst, PlayerBase attacker, PlayerBase defender, Boolean willPromote) throws CloneNotSupportedException{
+        PieceBase src_pieceBase = attacker.getPieceOnBoardAt(src).clone();
         attacker.reducePieceOnBoardAt(src);
-        src_piece.setPoint(dst);
+        src_pieceBase.setPoint(dst);
         if(defender.getPieceTypeOnBoardAt(dst) > 0) {
-            Piece dst_piece = defender.getPieceOnBoardAt(dst).clone();
+            PieceBase dst_pieceBase = defender.getPieceOnBoardAt(dst).clone();
             defender.reducePieceOnBoardAt(dst);
-            dst_piece.setPoint(new Point(-1,-1));
-            if(dst_piece.getTypeOfPiece() > Piece.GYOKU)
-                attacker.addPiecesInHand(dst_piece.getDemotePiece());
+            dst_pieceBase.setPoint(new Point(-1,-1));
+            if(dst_pieceBase.getTypeOfPiece() > PieceBase.GYOKU)
+                attacker.addPiecesInHand(dst_pieceBase.getDemotePiece());
             else
-                attacker.addPiecesInHand(dst_piece);
+                attacker.addPiecesInHand(dst_pieceBase);
         }
         if (willPromote)
-            attacker.addPiecesOnBoard(src_piece.getPromotePiece());
+            attacker.addPiecesOnBoard(src_pieceBase.getPromotePiece());
         else
-            attacker.addPiecesOnBoard(src_piece);
+            attacker.addPiecesOnBoard(src_pieceBase);
     }
 
     // 与えられた位置が含まれる列に，既に歩があればtrue
-    public boolean selected_will_be_niFu(Piece selected_piece, int x){
+    public boolean selected_will_be_niFu(PieceBase selected_pieceBase, int x){
     	boolean ret = false;
     	// 置こうとしている駒が歩であるか
-    	if(selected_piece.getTypeOfPiece() == Piece.FU){
+    	if(selected_pieceBase.getTypeOfPiece() == PieceBase.FU){
     		for(int y = 0; y < 9; y++){
-        		Piece piece = attacker.getPieceOnBoardAt(new Point(x, y));
+        		PieceBase pieceBase = attacker.getPieceOnBoardAt(new Point(x, y));
         		// 自分の駒でかつそれが歩であれば
-        		if(piece.getTypeOfPiece() == Piece.FU){
+        		if(pieceBase.getTypeOfPiece() == PieceBase.FU){
         			ret = true;
         			break;
         		}
@@ -261,10 +259,10 @@ public class GameBoard {
     	return ret;
     }
     // 与えられた位置が動かせる位置ならtrue
-    public Boolean wouldMoveNextLater(Piece selected_piece, Point dst) {
-        Piece p = null;
+    public Boolean wouldMoveNextLater(PieceBase selected_pieceBase, Point dst) {
+        PieceBase p = null;
         try {
-            p = selected_piece.clone();
+            p = selected_pieceBase.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -300,7 +298,7 @@ public class GameBoard {
     		Map<String, Integer> nameIdPairs = new HashMap<String, Integer>() {
     			{
     				String[] keys = new String[] {"歩", "香", "桂", "銀", "金", "角", "飛"};
-    				int[] values = new int[] {Piece.FU, Piece.KYOSHA, Piece.KEIMA, Piece.GIN, Piece.KIN, Piece.KAKU, Piece.HISHA};
+    				int[] values = new int[] {PieceBase.FU, PieceBase.KYOSHA, PieceBase.KEIMA, PieceBase.GIN, PieceBase.KIN, PieceBase.KAKU, PieceBase.HISHA};
     				for(int i = 0; i < 7; i++){
     					put(keys[i], values[i]);
     				}
@@ -318,11 +316,11 @@ public class GameBoard {
     public void printBoard() {
         for(int y = 0; y < 9; y++) {
             for(int x = 0; x < 9; x++) {
-                Player player;
+                PlayerBase player;
                 if (attacker.getPieceTypeOnBoardAt(new Point(x, y)) > 0) player = attacker;
                 else player = defender;
                 String str = "";
-                Boolean existPiece = player.getPieceTypeOnBoardAt(new Point(x,y)) != Piece.NONE;
+                Boolean existPiece = player.getPieceTypeOnBoardAt(new Point(x,y)) != PieceBase.NONE;
                 if (player instanceof AheadPlayer && existPiece) str += "+";
                 else if (player instanceof BehindPlayer && existPiece) str += "-";
                 if (!existPiece) str += "_";
@@ -355,10 +353,10 @@ public class GameBoard {
         for(int y = 0; y < 9; y++) {
             ret += "P" + (y+1);
             for(int x = 0; x < 9; x++) {
-                Player player;
+                PlayerBase player;
                 if (attacker.getPieceTypeOnBoardAt(new Point(x, y)) > 0) player = attacker;
                 else player = defender;
-                Boolean existPiece = player.getPieceTypeOnBoardAt(new Point(x,y)) != Piece.NONE;
+                Boolean existPiece = player.getPieceTypeOnBoardAt(new Point(x,y)) != PieceBase.NONE;
                 if (player instanceof AheadPlayer && existPiece) ret += "+";
                 else if (player instanceof BehindPlayer && existPiece) ret += "-";
                 if (!existPiece) ret += " * ";
@@ -374,10 +372,10 @@ public class GameBoard {
      * @return 王手されているならば{@code true}
      */
     @org.jetbrains.annotations.NotNull
-    private Boolean isMated(Player attacker, Player defender) throws PlayerNotDefinedGyokuException {
+    private Boolean isMated(PlayerBase attacker, PlayerBase defender) throws PlayerNotDefinedGyokuException {
         // とりあえずの実装
         // より早く判定するには、玉の周りの駒と飛車角行を調べればよい
-        Point ptGyoku = attacker.getPiecesOnBoard(Piece.GYOKU)
+        Point ptGyoku = attacker.getPiecesOnBoard(PieceBase.GYOKU)
                 .findFirst()
                 .orElseThrow(PlayerNotDefinedGyokuException::new)
                 .getPoint();
@@ -400,21 +398,21 @@ public class GameBoard {
         // 王手されている前提
         // 攻撃側の玉を動かしたとしてもisMatedだった場合、投了の可能性があるので
         // 何かはれる可能性がないか調べる
-        Player cAtt = null, cDef = null;
+        PlayerBase cAtt = null, cDef = null;
         try {
             cAtt = attacker.clone();
             cDef = defender.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        final Player att = cAtt;
-        final Player def = cDef;
-        List<Piece> pieces_in_hand = new ArrayList<>();
+        final PlayerBase att = cAtt;
+        final PlayerBase def = cDef;
+        List<PieceBase> pieces_in_hand = new ArrayList<>();
         pieces_in_hand.addAll(attacker.getPiecesInHand());
         Set<Point> points_of_capable_moving_of_gyoku = new HashSet<>();
         Point ptGyoku;
         if (att != null && def != null) {
-            ptGyoku = att.getPiecesOnBoard(Piece.GYOKU)
+            ptGyoku = att.getPiecesOnBoard(PieceBase.GYOKU)
                     .findAny()
                     .orElseThrow(PlayerNotDefinedGyokuException::new)
                     .getPoint();
@@ -425,7 +423,7 @@ public class GameBoard {
         }
         // まず、玉を他の位置に移動して王手が防げるか判定する
         for (Point c : points_of_capable_moving_of_gyoku) {
-            Player a = null, d = null;
+            PlayerBase a = null, d = null;
             try {
                 a = att.clone();
                 d = def.clone();
@@ -445,7 +443,7 @@ public class GameBoard {
 
         // もし、駒を持っていて指すことで王手を防げるのなら詰みではない
         if(!def.getPiecesInHand().isEmpty()) for (Point c : points_of_capable_moving_of_gyoku) {
-            Player a = null, d = null;
+            PlayerBase a = null, d = null;
             try {
                 a = att.clone();
                 d = def.clone();
@@ -454,22 +452,22 @@ public class GameBoard {
             }
 
             if (a != null && d != null) {
-                for (Piece piece : pieces_in_hand) {
-                    if ( !selected_will_be_niFu(piece, c.x)) {
-                        piece.setPoint(c);
-                        a.addPiecesOnBoard(piece);
+                for (PieceBase pieceBase : pieces_in_hand) {
+                    if ( !selected_will_be_niFu(pieceBase, c.x)) {
+                        pieceBase.setPoint(c);
+                        a.addPiecesOnBoard(pieceBase);
                         if (!isMated(a, d)) return false;
                     }
                 }
             }
         }
         // もし、玉の周りの駒を移動させることで王手を防げるのなら詰みではない
-        for (Piece piece : att.getPiecesOnBoard()) {
-            Point src = piece.getPoint();
+        for (PieceBase pieceBase : att.getPiecesOnBoard()) {
+            Point src = pieceBase.getPoint();
             Set<Point> points = new HashSet<>();
-            points.addAll(piece.getCapablePutPoint(att, def));
+            points.addAll(pieceBase.getCapablePutPoint(att, def));
             for (Point dest : points) {
-                Player a = null, d = null;
+                PlayerBase a = null, d = null;
                 try {
                     a = att.clone();
                     d = def.clone();

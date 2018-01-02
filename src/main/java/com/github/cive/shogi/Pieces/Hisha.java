@@ -1,13 +1,13 @@
 package com.github.cive.shogi.Pieces;
 
 import com.github.cive.shogi.GameBoard;
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Hisha extends Piece {
+public class Hisha extends PieceBase {
     public Hisha(Point p) {
         super(p);
     }
@@ -38,7 +38,7 @@ public class Hisha extends Piece {
         return set;
     }
     @Override
-    public Set<Point> getCapablePutPoint(Player attacker, Player defender){
+    public Set<Point> getCapablePutPoint(PlayerBase attacker, PlayerBase defender){
         Set<Point> set = new HashSet<>();
         set.addAll(getSetToNeedToAdd(attacker, defender, true, 1, this.getPoint()));
         set.addAll(getSetToNeedToAdd(attacker, defender, false, 1, this.getPoint()));
@@ -46,7 +46,7 @@ public class Hisha extends Piece {
         set.addAll(getSetToNeedToAdd(attacker, defender, false, -1, this.getPoint()));
         return set;
     }
-    public Set<Point> getSetToNeedToAdd(Player attacker, Player defender, boolean axis, int ini, Point selected) {
+    public Set<Point> getSetToNeedToAdd(PlayerBase attacker, PlayerBase defender, boolean axis, int ini, Point selected) {
         Set<Point> set_for_add = new HashSet<>();
         for(int i = ini; Math.abs(i) < 9; i += ini) {
             Point target = new Point(selected.x+(axis?i:0), selected.y+(axis?0:i));
@@ -65,6 +65,6 @@ public class Hisha extends Piece {
 
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.HISHA;
+        return PieceBase.HISHA;
     }
 }

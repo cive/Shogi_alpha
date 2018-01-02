@@ -1,12 +1,12 @@
 package com.github.cive.shogi.Pieces;
 
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Keima extends Piece {
+public class Keima extends PieceBase {
     public Keima(Point p) {
         super(p);
     }
@@ -27,7 +27,7 @@ public class Keima extends Piece {
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
         Set<Point> set = new HashSet<>();
-        if(player_type == Player.AHEAD) {
+        if(player_type == PlayerBase.AHEAD) {
             set.add(new Point(-1, -2));
             set.add(new Point(1, -2));
         } else {
@@ -38,6 +38,6 @@ public class Keima extends Piece {
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.KEIMA;
+        return PieceBase.KEIMA;
     }
 }

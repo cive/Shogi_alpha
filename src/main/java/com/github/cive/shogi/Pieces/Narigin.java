@@ -8,7 +8,7 @@ import java.util.Set;
  * Created by yotuba on 16/05/11.
  * Promoted Gin
  */
-public class Narigin extends Piece {
+public class Narigin extends PieceBase {
     public Narigin(Point p) {
         super(p);
     }
@@ -30,12 +30,12 @@ public class Narigin extends Piece {
     public Set<Point> getRuleOfPiece(int player_type) {
         Set<Point> set = new HashSet<>();
         PieceFactory factory = new PieceFactory();
-        Piece kin = factory.create(Piece.KIN, this.getPoint());
+        PieceBase kin = factory.create(PieceBase.KIN, this.getPoint());
         set.addAll(kin.getRuleOfPiece(player_type));
         return set;
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.NARIGIN;
+        return PieceBase.NARIGIN;
     }
 }

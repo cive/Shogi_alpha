@@ -1,12 +1,12 @@
 package com.github.cive.shogi.Pieces;
 
-import com.github.cive.shogi.Players.Player;
+import com.github.cive.shogi.Players.PlayerBase;
 
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Gin extends Piece{
+public class Gin extends PieceBase {
     public Gin(Point p) {
         super(p);
     }
@@ -27,7 +27,7 @@ public class Gin extends Piece{
     @Override
     public Set<Point> getRuleOfPiece(int player_type) {
         Set<Point> set = new HashSet<>();
-        if(player_type == Player.AHEAD) {
+        if(player_type == PlayerBase.AHEAD) {
             set.add(new Point(-1, -1));
             set.add(new Point(0, -1));
             set.add(new Point(1, -1));
@@ -45,6 +45,6 @@ public class Gin extends Piece{
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.GIN;
+        return PieceBase.GIN;
     }
 }

@@ -3,11 +3,11 @@ package com.github.cive.shogi.Pieces;
 import java.awt.*;
 import java.util.Set;
 
-public class EmptyPiece extends Piece {
-    public EmptyPiece(Point p) {
+public class EmptyPieceBase extends PieceBase {
+    public EmptyPieceBase(Point p) {
         super(p);
     }
-    public EmptyPiece() {
+    public EmptyPieceBase() {
         super(new Point(-1,-1));
     }
 

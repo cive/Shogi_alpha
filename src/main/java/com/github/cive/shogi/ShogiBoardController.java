@@ -1,7 +1,7 @@
 package com.github.cive.shogi;
 
-import com.github.cive.shogi.Pieces.EmptyPiece;
-import com.github.cive.shogi.Pieces.Piece;
+import com.github.cive.shogi.Pieces.EmptyPieceBase;
+import com.github.cive.shogi.Pieces.PieceBase;
 import com.github.cive.shogi.Players.AheadPlayer;
 
 import org.jetbrains.annotations.Contract;
@@ -17,7 +17,7 @@ import java.awt.*;
 public class ShogiBoardController {
     final static int VIEW_MODE = 0;
     final static int BATTLE_MODE = 1;
-    private Piece selected_piece_in_hand = new EmptyPiece(new Point(-1, -1));
+    private PieceBase selected_piece_Base_in_hand = new EmptyPieceBase(new Point(-1, -1));
     private Point selected_point = new Point(-1,-1);
     private static final Point OFFSET = new Point(151 + 26, 0 + 26);
     private static final Point AHEAD_OFFSET = new Point(650,300);
@@ -30,8 +30,8 @@ public class ShogiBoardController {
             return BATTLE_MODE;
         }
     }
-    public Piece getSelected_piece_in_hand() throws CloneNotSupportedException{
-        return selected_piece_in_hand.clone();
+    public PieceBase getSelected_piece_Base_in_hand() throws CloneNotSupportedException{
+        return selected_piece_Base_in_hand.clone();
     }
     public Point getSelected_point() {
         return selected_point;
@@ -58,8 +58,8 @@ public class ShogiBoardController {
         boolean isSelectingOnBoard = selected_point.x != -1;
         // 持ち駒を選択中
         boolean isSelectingInHand;
-        if (selected_piece_in_hand != null) {
-            isSelectingInHand = selected_piece_in_hand.getTypeOfPiece() != Piece.NONE;
+        if (selected_piece_Base_in_hand != null) {
+            isSelectingInHand = selected_piece_Base_in_hand.getTypeOfPiece() != PieceBase.NONE;
         } else {
             isSelectingInHand = false;
         }
@@ -70,9 +70,9 @@ public class ShogiBoardController {
         // 将棋盤上をクリックしていて持ち駒を選択しているならば
         if (isClickedOnBoard && isSelectingInHand) {
             // 持ち駒を置く．
-            gameBoard.placePieceInHand(selected_piece_in_hand, clicked_position_on_board);
+            gameBoard.placePieceInHand(selected_piece_Base_in_hand, clicked_position_on_board);
             // 選択解除
-            selected_piece_in_hand = unselectPiece();
+            selected_piece_Base_in_hand = unselectPiece();
         }
         // 将棋盤上をクリックしていて、将棋盤場の駒を選択していてかつ
         // 駒移動が可能ならば
@@ -98,16 +98,16 @@ public class ShogiBoardController {
         }
         if (!isClickedOnBoard) {
             // 選択解除
-            selected_piece_in_hand = unselectPiece();
+            selected_piece_Base_in_hand = unselectPiece();
             selected_point = unselectPoint();
             int type_of_selected_in_hand;
             if (gameBoard.getAttacker() instanceof AheadPlayer)
                 type_of_selected_in_hand = getTypeOfPieceInHand(clicked, AHEAD_OFFSET);
             else
                 type_of_selected_in_hand = getTypeOfPieceInHand(clicked, BEHIND_OFFSET);
-            for (Piece piece : gameBoard.getAttacker().getPiecesInHand()) {
-                if(piece.getTypeOfPiece() == type_of_selected_in_hand) {
-                    selected_piece_in_hand = piece;
+            for (PieceBase pieceBase : gameBoard.getAttacker().getPiecesInHand()) {
+                if(pieceBase.getTypeOfPiece() == type_of_selected_in_hand) {
+                    selected_piece_Base_in_hand = pieceBase;
                     break;
                 }
             }
@@ -119,7 +119,7 @@ public class ShogiBoardController {
         boolean judge;
         judge = clicked.x >= offset.x && clicked.x <= (offset.x+150) &&
                 clicked.y >= offset.y && clicked.y <= (offset.y+50);
-        if(judge)return Piece.FU;
+        if(judge)return PieceBase.FU;
         for(int type = 2; type < 8; type+=2) {
             judge = clicked.x >= offset.x    && clicked.x <= (offset.x+75) &&
                     clicked.y >= offset.y+type*25 && clicked.y <= (offset.y+50+type*25);
@@ -128,14 +128,14 @@ public class ShogiBoardController {
                     clicked.y >= offset.y+type*25 && clicked.y <= (offset.y+50+type*25);
             if(judge)return type+1;
         }
-        return Piece.NONE;
+        return PieceBase.NONE;
     }
     @Contract(" -> !null")
     private Point unselectPoint() {
         return new Point(-1, -1);
     }
     @Contract(" -> !null")
-    private Piece unselectPiece() {
-        return new EmptyPiece();
+    private PieceBase unselectPiece() {
+        return new EmptyPieceBase();
     }
 }

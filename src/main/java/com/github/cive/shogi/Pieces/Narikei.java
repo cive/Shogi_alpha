@@ -8,7 +8,7 @@ import java.util.Set;
  * Created by yotuba on 16/05/11.
  * Promoted Keima
  */
-public class Narikei extends Piece {
+public class Narikei extends PieceBase {
     public Narikei(Point p) {
         super(p);
     }
@@ -30,12 +30,12 @@ public class Narikei extends Piece {
     public Set<Point> getRuleOfPiece(int player_type) {
         Set<Point> set = new HashSet<>();
         PieceFactory factory = new PieceFactory();
-        Piece kin = factory.create(Piece.KIN, this.getPoint());
+        PieceBase kin = factory.create(PieceBase.KIN, this.getPoint());
         set.addAll(kin.getRuleOfPiece(player_type));
         return set;
     }
     @Override
     public Integer getTypeOfPiece() {
-        return Piece.NARIKEI;
+        return PieceBase.NARIKEI;
     }
 }

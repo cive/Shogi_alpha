@@ -4,10 +4,10 @@ import java.awt.*;
 
 /**
  * Created by yotuba on 16/05/05.
- * Piece Factory class
+ * PieceBase Factory class
  */
 public class PieceFactory implements Constant {
-    public Piece create(int pieceId, Point place) {
+    public PieceBase create(int pieceId, Point place) {
         switch(pieceId) {
             case FU: return new Fu(place);
             case KYOSHA: return new Kyosha(place);
@@ -19,10 +19,10 @@ public class PieceFactory implements Constant {
             case GYOKU: return new Gyoku(place);
             case UMA: return new Uma(place);
             case RYU: return new Ryu(place);
-            default: return new EmptyPiece(place);
+            default: return new EmptyPieceBase(place);
         }
     }
-    public Piece createPromoted(int pieceId, Point place) {
+    public PieceBase createPromoted(int pieceId, Point place) {
         if (pieceId == FU) {
             return new Tokin(place);
         } else if (pieceId == KYOSHA) {
@@ -36,10 +36,10 @@ public class PieceFactory implements Constant {
         } else if (pieceId == HISHA) {
             return new Ryu(place);
         } else {
-            return new EmptyPiece(place);
+            return new EmptyPieceBase(place);
         }
     }
-    public Piece createDemoted(int pieceId, Point place) {
+    public PieceBase createDemoted(int pieceId, Point place) {
         if (pieceId == TOKIN) {
             return new Fu(place);
         } else if (pieceId == NARIKYO) {
@@ -53,7 +53,7 @@ public class PieceFactory implements Constant {
         } else if (pieceId == RYU) {
             return new Hisha(place);
         } else {
-            return new EmptyPiece(place);
+            return new EmptyPieceBase(place);
         }
     }
 }
